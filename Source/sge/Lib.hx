@@ -6,12 +6,15 @@ import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
 import openfl.utils.SystemPath;
 import haxe.io.Path;
+import sge.lib.SystemDirectory;
+
+#if (sys)
 import sys.io.FileOutput;
 import sys.io.File;
 import sys.FileSystem;
-import sge.lib.SystemDirectory;
+#end
 
-#if !lime_legacy
+#if (!lime_legacy && sys)
 import lime.system.System as SystemPath;
 #else
 import openfl.utils.SystemPath;
@@ -68,6 +71,7 @@ class Lib
 
   }
 
+#if (sys)
   public static function saveImage( image :BitmapData, file :String, directory :Int = 1 ) :Void
   { 
 
@@ -89,7 +93,6 @@ class Lib
     fo.close();
 
   }
-
 
   static function buildPath( file :String, directory :Int = 1 ) :Path
   {
@@ -116,5 +119,5 @@ class Lib
     return path;
 
   }
-
+#end
 }

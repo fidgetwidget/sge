@@ -84,7 +84,7 @@ class TimeRuler
   {
     mid = markers.length;
 
-    var marker = {
+    var marker :Marker = {
       id: mid,
       startTime: 0.0,
       endTime: 0.0,
