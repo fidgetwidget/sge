@@ -1,0 +1,3 @@
+/Export/*
+/Assets/**/*.pyxel
+/Source/_baseClass.hx

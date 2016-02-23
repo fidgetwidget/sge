@@ -1,0 +1,9 @@
++===================+
+|       SNAKE       |
++===================+
+
+A Simple Arcade Style Game.
+
+- You controle the direction the "snake" moves on the game board.
+- Eat apples to grow the "snake".
+- Game ends when the "snake" collides with itself or the grids bounds.

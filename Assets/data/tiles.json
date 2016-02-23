@@ -1,0 +1,80 @@
+{
+  "types": [
+    {
+      "name": "none",
+      "id": 0,
+      "filename": "tiles.png",
+      "x": 0,
+      "y": 0,
+      "width": 16,
+      "height": 16,
+      "key": "0xffffff"
+    },
+    {
+      "name": "collision",
+      "id": 1,
+      "filename": "collision.png",
+      "x": 0,
+      "y": 0,
+      "key": "0x9e764c"
+    },
+    {
+      "name": "dirt",
+      "id": 10,
+      "filename": "dirt.png",
+      "x": 0,
+      "y": 0,
+      "key": "0x9e764c"
+    },
+    {
+      "name": "clay",
+      "id": 16,
+      "filename": "clay.png",
+      "x": 0,
+      "y": 0,
+      "key": "0x9e764c",
+      "variants": [
+        {
+          "key": "0",
+          "x": 0,
+          "y": 4
+        },
+        {
+          "key": "s_1",
+          "x": 4,
+          "y": 4
+        },
+        {
+          "key": "s_2",
+          "x": 3,
+          "y": 4
+        },
+        {
+          "key": "s_4",
+          "x": 1,
+          "y": 4
+        },
+        {
+          "key": "s_8",
+          "x": 2,
+          "y": 4
+        }
+      ]
+    },
+    {
+      "name": "stone",
+      "id": 20,
+      "filename": "stone.png",
+      "x": 0,
+      "y": 0,
+      "key": "0x9e764c",
+      "variants": [
+        {
+          "set": true,
+          "x": 0,
+          "y": 64
+        }
+      ]
+    }
+  ]
+}
