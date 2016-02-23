@@ -15,7 +15,7 @@ I am doing all(most) of my playing with it on a mac, so I haven't tested it in a
 ### Samples
 
 - blockDrop : A tetris clone
-- brickBreaker (broken) : An allyway clone
+- brickBreaker (broken) : An alleyway clone
 - sanke : Snake...
  
 ### Games (bigger examples)
