@@ -30,9 +30,11 @@ class BaseScene extends Scene
   var fps : FPS;
   var mem : MemUsage;
   var debugText :TextField;
+  var collisionText :TextField;
   var currentWorldX(get, never) :Float;
   var currentWorldY(get, never) :Float;
   var currentTile :Bitmap;
+  var outline :Shape;
 
   // 
   // Input Flags & States
@@ -47,10 +49,12 @@ class BaseScene extends Scene
   var placeableTileTypes :Array<Int>;
   var currentTileType(get, set) :Int;
   var currentTileTypeIndex(get, set) :Int;
+
   var renderBounds :Bool = false;
   var renderCollisions :Bool = false;
-  var outline :Shape;
-  var collisions :Array<Collision>;
+  var resolveCollisions (get, never) :Bool;
+  
+
 
 
   public function new() 
@@ -82,39 +86,37 @@ class BaseScene extends Scene
     _sprite.addChild(world.image);
     _sprite.addChild(player.image);
     
-    init_fps();
-    init_mem();
-    init_debugText();
+    init_textFields();
     init_currentTile();
 
     reset_camera();
   }
 
 
-  inline function init_fps() :Void
+  inline function init_textFields() :Void
   {
     fps = new FPS( Game.root.stage.stageWidth - 150, 0, 0x333333 );
     fps.autoSize = TextFieldAutoSize.RIGHT;
     fps.defaultTextFormat = new TextFormat('Arial', 32);
     _sprite.addChild(fps);
-  }
 
-  inline function init_mem() :Void
-  {
     mem = new MemUsage( Game.root.stage.stageWidth - 300, 0, 0x333333 );
     mem.autoSize = TextFieldAutoSize.RIGHT;
     mem.defaultTextFormat = new TextFormat('Arial', 32);
     _sprite.addChild(mem);
-  }
 
-
-  inline function init_debugText() :Void
-  {
     debugText = new TextField();    
     debugText.autoSize = TextFieldAutoSize.LEFT;
     debugText.selectable = false;
     debugText.defaultTextFormat = new TextFormat('Arial', 32);
     _sprite.addChild(debugText);
+
+    collisionText = new TextField();
+    collisionText.y = Game.root.stage.stageHeight - 160;
+    collisionText.autoSize = TextFieldAutoSize.LEFT;
+    collisionText.selectable = false;
+    collisionText.defaultTextFormat = new TextFormat('Arial', 32);
+    _sprite.addChild(collisionText);
   }
 
 
@@ -137,22 +139,27 @@ class BaseScene extends Scene
     Game.ruler.startMarker('update', 0xff0000);
 
     debugText.text = '';
+    collisionText.text = '';
 
     handleInput();
     world.update();
-    player.update();
 
-    
-    collisions = world.collisionCheck(player.bounds, collisions);
-    while (collisions.length > 0)
+    player.update();
+    if (resolveCollisions)
     {
-      var smallest = Collision.getSmallest(collisions).smallest();
-      player.resolveCollision(smallest.px, smallest.py);
       collisions = world.collisionCheck(player.bounds, collisions);
+      while (collisions.length > 0)
+      {
+        smallest = Collision.getSmallest(collisions).smallest();
+        player.resolveCollision(smallest.px, smallest.py);
+        collisions = world.collisionCheck(player.bounds, collisions);
+      }
     }
     
     Game.ruler.endMarker('update');
   }
+  var smallest :Collision;
+  var collisions :Array<Collision>;
 
 
   override public function render()
@@ -253,6 +260,16 @@ class BaseScene extends Scene
     var g = outline.graphics;
     var xx;
     var yy;
+    var ww;
+    var hh;
+
+    xx = (player.x - player.bounds.halfWidth - camera.x) * camera.scaleX;
+    yy = (player.y - player.bounds.height - camera.y) * camera.scaleY;
+    ww = player.bounds.width * camera.scaleX;
+    hh = player.bounds.height * camera.scaleX;
+
+    g.drawRect(xx, yy, ww, hh);
+
     var tileWidth = CONST.TILE_WIDTH * camera.scaleX;
     var tileHeight = CONST.TILE_HEIGHT * camera.scaleY;
     var px = (player.x - camera.x) * camera.scaleX;
@@ -272,9 +289,6 @@ class BaseScene extends Scene
     }
 
     g.lineStyle(3, 0x0000ff);
-    collisions = world.collisionCheck(player.bounds, collisions);
-    var smallest = Collision.getSmallest(collisions).smallest();
-
     var pw = player.width * camera.scaleX;
     var ph = player.height * camera.scaleY;
 
@@ -285,12 +299,23 @@ class BaseScene extends Scene
     g.moveTo(xx, yy);
     g.drawCircle(xx, yy, 2);
 
-    if (smallest.px != 0 || smallest.py != 0)
+
+    collisions = world.collisionCheck(player.bounds, collisions);
+    if (collisions.length > 0)
     {
-      xx = xx - (smallest.px * camera.scaleX);
-      yy = yy - (smallest.py * camera.scaleY);
-      g.lineTo(xx, yy);  
+      collisionText.text = '${collisions.length}';
+
+      smallest = Collision.getSmallest(collisions).smallest();
+      if (smallest.px != 0 || smallest.py != 0)
+      {
+        xx = xx - (smallest.px * camera.scaleX);
+        yy = yy - (smallest.py * camera.scaleY);
+        g.lineTo(xx, yy);  
+      }
+
+      collisionText.text += ' ${smallest.px}|${smallest.py}';
     }
+    
   }
 
   // 
@@ -629,12 +654,15 @@ class BaseScene extends Scene
     var imageData = region.cache;
     var fileName = 'region_x${rx}_y${ry}.png';
     var path = '/${fileName}';
-
+#if (sys)
     Lib.saveImage( imageData, path, sge.lib.SystemDirectory.DESKTOP );
+#end
   }
 
   inline function get_currentWorldX() :Float return (Game.inputManager.mouse.mouseX / camera.scaleX) + camera.x;
   inline function get_currentWorldY() :Float return (Game.inputManager.mouse.mouseY / camera.scaleY) + camera.y;
+
+  inline function get_resolveCollisions() :Bool return !renderCollisions;
 
   // 
   // Properties

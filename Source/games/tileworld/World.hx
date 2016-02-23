@@ -30,6 +30,7 @@ class World {
 
   var regions :Map<String, Region>;
   var regionBitmaps :Map<String, Bitmap>;
+  var collisionBitmaps :Map<String, Bitmap>;
 
   var camera_x (get, never) :Float;
   var camera_y (get, never) :Float;
@@ -44,6 +45,7 @@ class World {
     // bitmap = new Bitmap(camera.bounds.width, camera.bounds.height, false, 0);
     regions = new Map();
     regionBitmaps = new Map();
+    collisionBitmaps = new Map();
 
     init_regions();
   }
@@ -87,15 +89,17 @@ class World {
   {
     if (collisions == null) collisions = new Array();
 
-    var xx = aabb.left;
-    var yy = aabb.top;
+    var xx :Float = aabb.left;
+    var yy :Float = aabb.top;
+    var tile :Tile = null;
+    var collision :Collision;
 
     while (xx <= aabb.right)
     {
       while (yy <= aabb.bottom)
       {
-        var tile = getTile(xx, yy);
-        var collision = collision_tile(aabb, tile);
+        tile = getTile(xx, yy);
+        collision = collision_tile(aabb, tile);
         if (collision != null)
         {
           collisions.push(collision);
@@ -119,42 +123,90 @@ class World {
     if (dir == NEIGHBORS.NONE) return null;
 
     var tileHalfWidth = (CONST.TILE_WIDTH * 0.5);
-    var tileHalfHeight = (CONST.TILE_HEIGHT * 0.5);
-
-    var tileCenterX = tile.worldX + tileHalfWidth;
-    var tileCenterY = tile.worldY + tileHalfHeight;
+    var tileCenterX = tile.worldX + tileHalfWidth;    
     var dx = tileCenterX - aabb.centerX;
-    var dy = tileCenterY - aabb.centerY;
-
     var px = (aabb.halfWidth + tileHalfWidth) - Math.abs(dx);
+
+    if (px <= 0) return null;
+
+    var tileHalfHeight = (CONST.TILE_HEIGHT * 0.5);
+    var tileCenterY = tile.worldY + tileHalfHeight;
+    var dy = tileCenterY - aabb.centerY;
     var py = (aabb.halfHeight + tileHalfHeight) - Math.abs(dy);
+
+    if (py <= 0) return null;
 
     px *= dx > 0 ? 1 : -1;
     py *= dy > 0 ? 1 : -1;
 
-    if (dir != NEIGHBORS.SIDES)
+    if (dir & NEIGHBORS.SIDES == NEIGHBORS.SIDES)
     {
-      if (dir & NEIGHBORS.HORIZONTAL != 0)
-      {
-        if (dir & NEIGHBORS.HORIZONTAL != NEIGHBORS.HORIZONTAL) 
-        {
-          if (dir & NEIGHBORS.WEST == NEIGHBORS.WEST && px < 0) px = 0;
-          if (dir & NEIGHBORS.EAST == NEIGHBORS.EAST && px > 0) px = 0;
-        }
-      }
-      else
-        px = 0;
-      
+      // Do nothing because we have all 4 directions
+    }
+    else
+    {
       if (dir & NEIGHBORS.VERTICAL != 0)
       {
-        if (dir & NEIGHBORS.VERTICAL != NEIGHBORS.VERTICAL) 
+        // up & down are fine as is, lets check for left or right
+        if (dir & NEIGHBORS.WEST != 0)
         {
-          if (dir & NEIGHBORS.NORTH == NEIGHBORS.NORTH && py < 0) py = 0;
-          if (dir & NEIGHBORS.SOUTH == NEIGHBORS.SOUTH && py > 0) py = 0;
+          while (px < 0) px += CONST.TILE_WIDTH;
+        } 
+        else if (dir & NEIGHBORS.EAST != 0) 
+        {
+          while (px > 0) px -= CONST.TILE_WIDTH;
+        }
+        else
+        {
+          px = 0;
+        }
+      }
+      else if (dir & NEIGHBORS.HORIZONTAL != 0)
+      {
+        // left & right are fine as is, lets check for up or down
+        if (dir & NEIGHBORS.NORTH != 0)
+        {
+          while (py < 0) py += CONST.TILE_HEIGHT;
+        }
+        else if (dir & NEIGHBORS.SOUTH != 0)
+        {
+          while (py > 0) py -= CONST.TILE_HEIGHT;
+        }
+        else
+        {
+           py = 0;
         }
       }
       else
-        py = 0;
+      {
+        // no sides are safe, test them all
+        
+        if (dir & NEIGHBORS.WEST != 0)
+        {
+          while (px < 0) px += CONST.TILE_WIDTH;
+        } 
+        else if (dir & NEIGHBORS.EAST != 0) 
+        {
+          while (px > 0) px -= CONST.TILE_WIDTH;
+        }
+        else
+        {
+          px = 0;
+        }
+
+        if (dir & NEIGHBORS.NORTH != 0)
+        {
+          while (py < 0) py += CONST.TILE_HEIGHT;
+        }
+        else if (dir & NEIGHBORS.SOUTH != 0)
+        {
+          while (py > 0) py -= CONST.TILE_HEIGHT;
+        }
+        else
+        {
+           py = 0;
+        }
+      }
       
     }
 
@@ -402,7 +454,9 @@ class World {
     var fileName = 'region_x${regionXIndex}_y${regionYIndex}.png';
     var path = 'regions/${fileName}';
 
+#if (sys)
     Lib.saveImage( imageData, path );
+#end
   }
 
 

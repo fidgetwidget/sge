@@ -91,7 +91,7 @@ class Collision
 
     while(array.length > 0)
     {
-      collision = array.pop();
+      collision = array.pop().smallest();
       
       if (collision.px != 0) 
       {
@@ -99,7 +99,6 @@ class Collision
         xdir = (xval == smallest.xval ? smallest.xdir : collision.xdir);
         smallest.px = xval * xdir;
       }
-
       if (collision.py != 0) 
       {
         yval = Math.min(smallest.yval, collision.yval);
