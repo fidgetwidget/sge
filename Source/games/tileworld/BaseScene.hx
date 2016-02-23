@@ -325,9 +325,15 @@ class BaseScene extends Scene
   inline function reset_camera() :Void
   {
     setScale(2);
-    // camera.centerX = CONST.REGION_WIDTH * 0.5;
-    // camera.centerY = CONST.REGION_HEIGHT * 0.5;
-    // player.setPosition(CONST.REGION_WIDTH * 0.5, CONST.REGION_HEIGHT * 0.5);
+    camera.centerX = CONST.REGION_WIDTH * 0.5;
+    camera.centerY = CONST.REGION_HEIGHT * 0.5;
+    player.setPosition(CONST.REGION_WIDTH * 0.5, CONST.REGION_HEIGHT * 0.5);
+
+    draggingRect.x = player.x - 120;
+    draggingRect.y = player.y + 120;
+    draggingRect.width = 240;
+    draggingRect.height = 20;
+    placeTile_rect(draggingRect, TYPES.DIRT);
   }
 
   inline function setScale( value :Float ) :Void
@@ -602,23 +608,35 @@ class BaseScene extends Scene
       player.velocityX = 0;
     }
 
-    if (input.keyboard.isDown(Keyboard.UP) ||
-      input.keyboard.isDown(Keyboard.DOWN))
+    if (!renderCollisions)
     {
-      if (input.keyboard.isDown(Keyboard.UP))
+      if (input.keyboard.isPressed(Keyboard.Z) ||
+          input.keyboard.isPressed(Keyboard.UP))
       {
-        player.velocityY = -4;
-      } 
-      if (input.keyboard.isDown(Keyboard.DOWN))
-      {
-        player.velocityY = 4;
-      } 
+        player.velocityY -= CONST.JUMP_POWER;
+      }
+      // gravity
+      player.velocityY += CONST.GRAVITY_ACCELERATION;
     }
     else
     {
-      player.velocityY = 0;
+      if (input.keyboard.isDown(Keyboard.UP) ||
+          input.keyboard.isDown(Keyboard.DOWN))
+      {
+        if (input.keyboard.isDown(Keyboard.UP))
+        {
+          player.velocityY = -4;
+        } 
+        if (input.keyboard.isDown(Keyboard.DOWN))
+        {
+          player.velocityY = 4;
+        } 
+      }
+      else
+      {
+        player.velocityY = 0;
+      }
     }
-
   }
 
   // 

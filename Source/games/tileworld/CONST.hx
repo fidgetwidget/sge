@@ -3,6 +3,9 @@ package games.tileworld;
 @:publicFields
 class CONST {
 
+  static var JUMP_POWER :Float = 13;
+  static var GRAVITY_ACCELERATION :Float = 0.799;
+
   static var REGION_CHUNKS_WIDE :Int = 4;
   static var REGION_CHUNKS_HIGH :Int = 4;
 
