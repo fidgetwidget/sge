@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 	
-	<meta title="Sge" package="com.sample.sge" version="1.0.0" company="SmallGalaxyGames" />
+	<meta title="Sge" package="com.sample.sge" version="0.1.0" company="SmallGalaxyGames" />
 	
 	<app main="Main" path="Export" file="Sge" />
 	<window width="1024" height="768" fps="60" unless="web" ></window>
