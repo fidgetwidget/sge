@@ -46,12 +46,12 @@ typedef ImportTileTypes = {
 typedef ImportTilesetData = {
 
   var name :String;
-  var id :UInt;
+  var id :Int;
   var filename :String;
-  var x :UInt;
-  var y :UInt;
-  var width :UInt;
-  var height :UInt;
+  var x :String;
+  var y :String;
+  var width :String;
+  var height :String;
   var key :String; // 0x000000 -> 0xffffff
   var variants :Array<ImportTileTypeVariantData>;
   var noSides :Bool;
@@ -63,8 +63,8 @@ typedef ImportTileTypeVariantData = {
 
   var key :String; // the part after the : in ${type}:${neighbors} or ${type}:s${side} or ${type}:c${corner}
   var set :Bool;
-  var x :UInt;
-  var y :UInt;
+  var x :Int;
+  var y :Int;
 
 }
 
@@ -84,16 +84,15 @@ class TilesetImporter {
   var rect :Rectangle;
   var zero :Point;
   var sourceImage :BitmapData;
-  var tileBitmap :BitmapData;
   var tileset :String;
 
-  var x :UInt;
-  var y :UInt;
-  var width :UInt;
-  var height :UInt;
+  var x :Int;
+  var y :Int;
+  var width :Int;
+  var height :Int;
   var rgb :UInt;
 
-  var columns :UInt;
+  var columns :Int;
 
 
   public function new() 
@@ -105,10 +104,13 @@ class TilesetImporter {
   public function importTileTypes( path :String ) :Map<Int, TilesetData>
   {
     trace('importing $path');
+
     var results :Map< Int, TilesetData > = new Map();
 
     jsonString = Assets.getText(path);
     jsonData = Json.parse(jsonString);
+
+    trace(jsonData);
 
     bitwiseMap = jsonData.neighborBitwiseMap;
     bitwiseMap = bitwiseMap == null ? DEFAULT_BITWISE_MAP : bitwiseMap;
@@ -118,20 +120,10 @@ class TilesetImporter {
     // type :ImportTilesetData
     for( type in jsonData.types )
     {
+      var tilesetData = makeTilesetData(type);
+
       rgb = Std.parseInt(type.key);
       sourceImage = Assets.getBitmapData('tiles/${type.filename}');
-
-      var tilesetData :TilesetData = {
-        name:           type.name,
-        id:             type.id,
-        filename:       type.filename,
-        rgb:            rgb,
-        source:         sourceImage,
-        tileFrame:      null,
-        bitwiseFrames:  null,
-        variants:       null,
-        sideFrames:     null
-      };
 
       if (type.id == 0) {
         tilesetData.tileFrame = getNoneTileFrame();
@@ -139,21 +131,24 @@ class TilesetImporter {
         continue;
       }
 
-      x = type.x;
-      y = type.y;
-      width = type.width;
-      height = type.height;
-      if (width == 0) width = CONST.TILE_WIDTH;
-      if (height == 0) height = CONST.TILE_HEIGHT;
-      columns = Math.floor(sourceImage.width / width);
+      x = Reflect.hasField(type, "x") ? Std.parseInt(type.x) : 0;
+      y = Reflect.hasField(type, "y") ? Std.parseInt(type.y) : 0;
+      width = Reflect.hasField(type, "width") ? Std.parseInt(type.width) : 0;
+      height = Reflect.hasField(type, "height") ? Std.parseInt(type.height) : 0;
+      width = (width == 0) ? CONST.TILE_WIDTH : width;
+      height = (height == 0) ? CONST.TILE_HEIGHT : height;
 
-      tilesetData.bitwiseFrames = getTileFrames( x, y, width, height, bitwiseMap );
+      var sourceWidth = tilesetData.source.width;
+      trace(sourceWidth);
+      columns = Math.floor(sourceWidth / width);
+      
+      tilesetData.bitwiseFrames = getTileFrames( x, y, width, height, columns, bitwiseMap );
       
       if (type.variants != null)
-        tilesetData.variants = getTileFrameVariants( type.id, x, y, width, height, type.variants );
+        tilesetData.variants = getTileFrameVariants( type.id, x, y, width, height, columns, type.variants );
 
       if (type.noSides != true)
-        tilesetData.sideFrames = getSideFrames( x, y, width, height );
+        tilesetData.sideFrames = getSideFrames( x, y, width, height, columns );
 
       results.set(type.id, tilesetData);
     }
@@ -161,13 +156,23 @@ class TilesetImporter {
     return results;
   }
 
+
+  inline function makeTilesetData( type :ImportTilesetData ) :TilesetData
+  {    
+    return new TilesetData( type.name, type.id, type.filename, type.key );
+  }
+
+
+
   inline function getNoneTileFrame() :TileFrameData
   {
     return getTileFrame( 0, 0, 0, 0, CONST.TILE_WIDTH, CONST.TILE_HEIGHT);
   }
 
 
-  inline function getTileFrames( tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int, bitwiseMap :Array<Int> ) :Array<TileFrameData>
+  inline function getTileFrames( 
+    tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int, columns :Int,
+    bitwiseMap :Array<Int> ) :Array<TileFrameData>
   {
     var frames :Array<TileFrameData> = new Array();
     var x :Int;
@@ -188,7 +193,7 @@ class TilesetImporter {
   }
 
 
-  inline function getTileFrameVariants( tile_id :Int, tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int, variants :Array<ImportTileTypeVariantData> ) :Map< String, Array<TileFrameData> >
+  inline function getTileFrameVariants( tile_id :Int, tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int, columns :Int, variants :Array<ImportTileTypeVariantData> ) :Map< String, Array<TileFrameData> >
   {
     var variantFramesMap :Map< String, Array<TileFrameData> > = new Map();
 
@@ -198,7 +203,7 @@ class TilesetImporter {
 
       if (variant.set)
       {
-        getTileFrameVariantSet( tile_id, tile_x + variant.x, tile_y + variant.y, tile_width, tile_height, variantFramesMap );
+        getTileFrameVariantSet( tile_id, tile_x + variant.x, tile_y + variant.y, tile_width, tile_height, columns, variantFramesMap );
         continue;
       }
 
@@ -210,7 +215,7 @@ class TilesetImporter {
 
 
   inline function getTileFrameVariantSet( 
-    tile_id :Int, tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int, 
+    tile_id :Int, tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int, columns :Int,
     variantFramesMap :Map<String, Array<TileFrameData>> ) :Void
   {
     var x :Int;
@@ -261,9 +266,9 @@ class TilesetImporter {
   {
 
     var variantFrames :Array<TileFrameData>;
-
     if (!variantFramesMap.exists(variant_key))
       variantFramesMap.set(variant_key, new Array());
+
     variantFrames = variantFramesMap.get(variant_key);
 
     rect.x = x = tile_x + (x * tile_width);
@@ -271,7 +276,7 @@ class TilesetImporter {
     rect.width = tile_width;
     rect.height = tile_height;
 
-    tileBitmap = new BitmapData(tile_width, tile_height, true, 0);
+    var tileBitmap = new BitmapData(tile_width, tile_height, true, 0);
     tileBitmap.copyPixels( sourceImage, rect, zero );
 
     var tileFrame :TileFrameData = {
@@ -286,7 +291,7 @@ class TilesetImporter {
   }
 
 
-  inline function getSideFrames( tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int ) :Array<TileFrameData>
+  inline function getSideFrames( tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int, columns :Int ) :Array<TileFrameData>
   {
     var sideFrames :Array<TileFrameData> = new Array();
     var x :Int;
@@ -311,12 +316,14 @@ class TilesetImporter {
 
   inline function getTileFrame( x :Int, y :Int, tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int ) :TileFrameData
   {
+    trace('getTileFrame { x$x, y$y, tile_x$tile_x, tile_y$tile_y, tile_width$tile_width, tile_height$tile_height }');
+
     rect.x = x = tile_x + (x * tile_width);
     rect.y = y = tile_y + (y * tile_height);
     rect.width = tile_width;
     rect.height = tile_height;
 
-    tileBitmap = new BitmapData(tile_width, tile_height, true, 0);
+    var tileBitmap = new BitmapData(tile_width, tile_height, true, 0);
     tileBitmap.copyPixels( sourceImage, rect, zero );
 
     return {

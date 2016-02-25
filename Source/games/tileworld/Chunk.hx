@@ -20,6 +20,7 @@ class Chunk {
 
   var region :Region;
   var tiles :Array<Tile>;
+  var bgTiles :Array<Tile>;
   public var tileCollision :Array<Int>;
   var changedTiles :Array<TileData>;
 
@@ -27,6 +28,7 @@ class Chunk {
   public function new() 
   { 
     tiles = new Array();
+    bgTiles = new Array();
     tileCollision = new Array();
     changedTiles = new Array();
 
@@ -52,27 +54,34 @@ class Chunk {
   {
     var index = worldPosition_tileIndex(x, y);
 
-    tiles[index] = tile;
+    if (tile.layer == LAYERS.BASE)
+      tiles[index] = tile;
+    if (tile.layer == LAYERS.BACKGROUND)
+      bgTiles[index] = tile;
+
     tileChanged(tile);
   }
   
 
-  public function setTileType( x :Float, y :Float, tileType :Int ) :Void
+  public function setTileType( x :Float, y :Float, tileType :Int, layer :Int = LAYERS.BASE ) :Void
   {
     var index = worldPosition_tileIndex(x, y);
     if (tiles.length < index) throw new Error("Chunk tile ["+index+"] unavailable.");
-    var tile = tiles[index];
+
+    var tile = layer == LAYERS.BASE ? tiles[index] : bgTiles[index];
+
     if (tile.type == tileType) return;
+
     tile.change(tileType);
     updateNeighbors(tile);
     tileChanged(tile);
   }
 
 
-  public inline function getTile( x :Float, y :Float ) :Tile
+  public inline function getTile( x :Float, y :Float, layer :UInt = LAYERS.BASE ) :Tile
   {
     var index = worldPosition_tileIndex(x, y);
-    return tiles[index];
+    return layer == LAYERS.BACKGROUND ?  bgTiles[index] : tiles[index];
   }
 
 
@@ -86,6 +95,7 @@ class Chunk {
   public inline function tileChanged( tile :Tile ) :Void
   {
     if (changedTiles.indexOf(tile.data) >= 0) return;
+
     changedTiles.push(tile.data);
     region.chunkChanged(this);
   }
@@ -101,21 +111,30 @@ class Chunk {
     var tyi :Int;
     var tx :Int;
     var ty :Int;
-    var tile :Tile;
 
     for (tyi in 0...CONST.CHUNK_TILES_HIGH)
     {
       for (txi in 0...CONST.CHUNK_TILES_WIDE)
       {
-        tile = getNewTile();
         tx = txi * CONST.TILE_WIDTH;
         ty = tyi * CONST.TILE_HEIGHT;
-        
-        tile.set(this, tx, ty, TYPES.NONE);
-        tiles.push(tile);
-        changedTiles.push(tile.data);
+
+        init_tile(tx, ty);
       }
     }
+  }
+
+  inline function init_tile(tx, ty) :Void
+  {
+    var tile :Tile = getNewTile();
+    tile.set(this, tx, ty, TYPES.NONE);
+    tiles.push(tile);
+    changedTiles.push(tile.data);
+
+    tile = getNewTile();
+    tile.set(this, tx, ty, TYPES.NONE, LAYERS.BACKGROUND);
+    bgTiles.push(tile);
+    changedTiles.push(tile.data);
   }
 
 
@@ -129,17 +148,17 @@ class Chunk {
   }
 
 
-  inline function getTile_local( x :Int, y :Int ) :Tile
-  {
-    var index = getIndex(x, y);
-    return tiles[index];
-  }
+  // inline function getTile_local( x :Int, y :Int ) :Tile
+  // {
+  //   var index = getIndex(x, y);
+  //   return tiles[index];
+  // }
 
-  inline function getCollision_local( x :Int, y :Int ) :Int
-  {
-    var index = getIndex(x, y);
-    return tileCollision[index]; 
-  }
+  // inline function getCollision_local( x :Int, y :Int ) :Int
+  // {
+  //   var index = getIndex(x, y);
+  //   return tileCollision[index]; 
+  // }
 
 
   inline function getNewTile() : Tile  return TilePool.instance.get();
@@ -189,21 +208,21 @@ class Chunk {
   // neithborOffsets: the x,y position index of the tile who's neighbor would be the associated neighborType
   // eg. 1 (NORTH) would have an offset of 0, 1 (the tile south of the given tile)
   // 
-  static var NEIGHBOR_TYPES :Array<Int> = [1, 2, 4, 8];
-  static var NEIGHBOR_OFFSETS :Array<Int> = [
-     0,  1, // NORTH -> SOUTH 
-    -1,  0, // EAST -> WEST
-     0, -1, // SOUTH -> NORTH
-     1,  0, // WEST -> EAST
-   ];
+  // static var NEIGHBOR_TYPES :Array<Int> = [1, 2, 4, 8];
+  // static var NEIGHBOR_OFFSETS :Array<Int> = [
+  //    0,  1, // NORTH -> SOUTH 
+  //   -1,  0, // EAST -> WEST
+  //    0, -1, // SOUTH -> NORTH
+  //    1,  0, // WEST -> EAST
+  //  ];
 
-  static var CORNER_TYPES :Array<Int> = [16, 32, 64, 128];
-  static var CORNER_OFFSETS :Array<Int> = [
-     1,  1, // NORT_WEST -> SOUTH_EAST
-    -1,  1, // NORT_EAST -> SOUTH_WEST
-    -1, -1, // SOUTH_EAST -> NORTH_WEST
-     1, -1, // SOUTH_WEST -> NORTH_EAST
-  ];
+  // static var CORNER_TYPES :Array<Int> = [16, 32, 64, 128];
+  // static var CORNER_OFFSETS :Array<Int> = [
+  //    1,  1, // NORT_WEST -> SOUTH_EAST
+  //   -1,  1, // NORT_EAST -> SOUTH_WEST
+  //   -1, -1, // SOUTH_EAST -> NORTH_WEST
+  //    1, -1, // SOUTH_WEST -> NORTH_EAST
+  // ];
 
   inline function updateNeighbors( tile :Tile ) :Void
   {
@@ -223,21 +242,22 @@ class Chunk {
     var ntype :UInt;
     var ttype :UInt;
     var nval  :UInt = 0;
+    var layer :UInt = tile.layer;
 
     // Sides
-    while (ni < Chunk.NEIGHBOR_TYPES.length)
+    while (ni < CONST.NEIGHBOR_TYPES.length)
     {
-      tnx = Chunk.NEIGHBOR_OFFSETS[n]; n++;
-      tny = Chunk.NEIGHBOR_OFFSETS[n]; n++;
+      tnx = CONST.NEIGHBOR_OFFSETS[n]; n++;
+      tny = CONST.NEIGHBOR_OFFSETS[n]; n++;
       tx = worldX + tile.x + (tw * tnx) + htw;
       ty = worldY + tile.y + (th * tny) + hth;
 
       // we go up to the world to make sure when we cross chunk 
       // and region we can still get the right tile
-      nt = region.world.getTile(tx, ty);
-      region.world.tileChanged(tx, ty);
+      nt = region.world.getTile(tx, ty, layer);
+      region.world.touchTile(tx, ty);
 
-      ntype = Chunk.NEIGHBOR_TYPES[ni]; ni++;
+      ntype = CONST.NEIGHBOR_TYPES[ni]; ni++;
       ttype = ntype == 0 ? 0 : NEIGHBORS.flip(ntype);
       if (tile.type != nt.type)
       {
@@ -259,24 +279,24 @@ class Chunk {
         val = val | ntype;
         
       nt.neighbors = val;
-      updateCollision_neighborsChanged(nt);
+      if (layer == LAYERS.COLLISION) updateCollision_neighborsChanged(nt);
     }
     tile.neighbors = nval;
-    updateCollision_neighborsChanged(tile);
+    if (layer == LAYERS.COLLISION) updateCollision_neighborsChanged(tile);
 
     // Corners
     ni = n = 0;
-    while (ni < Chunk.CORNER_TYPES.length)
+    while (ni < CONST.CORNER_TYPES.length)
     {
-      tnx = Chunk.CORNER_OFFSETS[n]; n++;
-      tny = Chunk.CORNER_OFFSETS[n]; n++;
+      tnx = CONST.CORNER_OFFSETS[n]; n++;
+      tny = CONST.CORNER_OFFSETS[n]; n++;
       tx = worldX + tile.x + (tw * tnx) + htw;
       ty = worldY + tile.y + (th * tny) + hth;
 
-      nt = region.world.getTile(tx, ty);
-      region.world.tileChanged(tx, ty);
+      nt = region.world.getTile(tx, ty, layer);
+      region.world.touchTile(tx, ty);
 
-      ntype = Chunk.CORNER_TYPES[ni]; ni++;
+      ntype = CONST.CORNER_TYPES[ni]; ni++;
       if (nt.type == TYPES.NONE) continue;
       nval += ntype == 16 ? 64 : ntype == 32 ? 128 : ntype == 64 ? 16 : ntype == 128 ? 32 : 0;
       
@@ -295,9 +315,12 @@ class Chunk {
 
   inline function updateCollision_neighborsChanged( tile :Tile ) :Void
   {
-    var index = getIndex_tile(tile);
-    var val = tile.type == TYPES.NONE ? NEIGHBORS.NONE : NEIGHBORS.inverse( tile.neighbors );
-    tileCollision[index] = val;
+    if (tile.layer == LAYERS.COLLISION) 
+    {
+      var index = getIndex_tile(tile);
+      var val = tile.type == TYPES.NONE ? NEIGHBORS.NONE : NEIGHBORS.inverse( tile.neighbors );
+      tileCollision[index] = val;
+    }
   }
 
   // 

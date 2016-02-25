@@ -11,7 +11,7 @@ class Tile {
   public var worldX (get, never) :Int;
   public var worldY (get, never) :Int;
 
-  public var layer (get, never) :Int;
+  public var layer (get, never) :UInt;
   public var type (get, never) :UInt;
   public var modifier (get, never) :UInt;
 
@@ -74,16 +74,11 @@ class Tile {
   // Internal
   // 
 
-  inline function init_frame() :Void
-  {
-    
-  }
-
   inline function setTileImage() :Void
   {
-    TYPES.setBitmapToTileType(data.bitmapData, _type, _modifier, _neighbors);
+    TYPES.setBitmapToTileType(data.bitmapData, _type, _modifier, _neighbors, data.layer);
     if (type != TYPES.NONE)
-      TYPES.setTileBitmapSides(data.bitmapData, type, sides);
+      TYPES.setTileBitmapSides(data.bitmapData, type, sides, data.layer);
   }
 
   // 

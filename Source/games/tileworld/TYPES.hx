@@ -35,6 +35,9 @@ class TYPES {
 
     var importer :TilesetImporter = new TilesetImporter();
     var results :Map< Int, TilesetData > = importer.importTileTypes('data/tiles.json');
+#if (html5)
+    trace(results);
+#end
 
     // trace('adding results');
 
@@ -46,13 +49,21 @@ class TYPES {
       var tileKey :String;
       var varTileKey :String;
       var tileFrame :TileFrameData;
+      var bitmapData :BitmapData;
       var neighborVal :Int;
 
       if (value.tileFrame != null)
       {
         tileKey = '$key';
         tileFrame = value.tileFrame;
-        TYPES.tileFrames.set(tileKey, tileFrame.bitmapData);
+#if (html5)
+        bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
+        bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
+        trace(bitmapData);
+#else
+        bitmapData = tileFrame.bitmapData;
+#end
+        TYPES.tileFrames.set(tileKey, bitmapData);
       }
 
       if (value.bitwiseFrames != null)
@@ -61,7 +72,14 @@ class TYPES {
         {
           tileKey = '$key:$bitwiseKey';
           tileFrame = value.bitwiseFrames[bitwiseKey];
-          TYPES.tileFrames.set(tileKey, tileFrame.bitmapData);
+#if (html5)
+          bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
+          bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
+          trace(bitmapData);
+#else
+          bitmapData = tileFrame.bitmapData;
+#end
+          TYPES.tileFrames.set(tileKey, bitmapData);
         }
       }       
 
@@ -72,7 +90,14 @@ class TYPES {
           neighborVal = NEIGHBORS.getNeighborVal(sideIndex);
           tileKey = '$key:s_$neighborVal';
           tileFrame = value.sideFrames[sideIndex];
-          TYPES.tileFrames.set(tileKey, tileFrame.bitmapData); 
+#if (html5)
+          bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
+          bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
+          trace(bitmapData);
+#else
+          bitmapData = tileFrame.bitmapData;
+#end
+          TYPES.tileFrames.set(tileKey, bitmapData);
         }
       }
 
@@ -88,7 +113,14 @@ class TYPES {
           {
             varTileKey = '${tileKey}_${vi}';
             tileFrame = frames[vi];
-            TYPES.tileFrames.set(varTileKey, tileFrame.bitmapData);  
+#if (html5)
+            bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
+            bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
+            trace(bitmapData);
+#else
+            bitmapData = tileFrame.bitmapData;
+#end
+            TYPES.tileFrames.set(varTileKey, bitmapData);
           }
         }
       }
@@ -102,7 +134,7 @@ class TYPES {
   }
 
 
-  public static inline function setBitmapToTileType( bitmapData :BitmapData, tileType :UInt, modifier :UInt = 0, neighbors :Int = 0 ) :Void
+  public static inline function setBitmapToTileType( bitmapData :BitmapData, tileType :UInt, modifier :UInt = 0, neighbors :Int = 0, layer :UInt = LAYERS.BASE ) :Void
   {
     if (TYPES.tileFrames == null) throw new Error("tileFrames is null");
 
@@ -114,7 +146,7 @@ class TYPES {
   }
 
 
-  public static inline function setTileBitmapSides( bitmapData :BitmapData, type :Int, sides :Array<Int>, ignoreTypePriority :Bool = false )
+  public static inline function setTileBitmapSides( bitmapData :BitmapData, type :Int, sides :Array<Int>, layer :UInt = LAYERS.BASE, ignoreTypePriority :Bool = false )
   {
     for (sideIndex in 0...sides.length)
     {
@@ -123,6 +155,7 @@ class TYPES {
 
       var neighborVal = NEIGHBORS.getNeighborVal(sideIndex);
       var sideTileKey = getTileSideKey(tileType, neighborVal);
+
       var sideTileBitmapData = TYPES.tileFrames.get(sideTileKey);
 
       bitmapData.copyPixels( sideTileBitmapData, TYPES.rect, TYPES.zero, null, null, true);
@@ -135,13 +168,19 @@ class TYPES {
   public static inline function getTypeFromRGB( rgb :UInt ) :UInt return rgbIdMap.get(rgb);
 
 
-  public static inline function getTileKey( tileType :UInt, modifier :Int, neighbors :UInt, noVariants :Bool = false ) :String
+  public static inline function getTileKey( tileType :UInt, modifier :Int, neighbors :UInt, layer :UInt = LAYERS.BASE, noVariants :Bool = false ) :String
   {
     var tileKey = '$tileType:$neighbors';
-    if (!TYPES.tileFrames.exists(tileKey)) tileKey = '$tileType';
+    // if (layer == LAYERS.BACKGROUND) tileKey += '_bg';
+
+    if (!TYPES.tileFrames.exists(tileKey)) 
+    {
+      tileKey = '$tileType';
+      // if (layer == LAYERS.BACKGROUND) tileKey += '_bg';
+    }
     if (!TYPES.tileFrames.exists(tileKey)) throw new Error('tileFrames $tileKey not found.');
 
-    if (variantCounts.exists(tileKey))
+    if (variantCounts.exists(tileKey) && !noVariants)
     {
       var count = variantCounts.get(tileKey);
       var r = Lib.random_int(0, count);
@@ -151,9 +190,11 @@ class TYPES {
     return tileKey;
   }
 
-  public static inline function getTileSideKey( tileType :UInt, neighborVal :UInt ) :String
+  public static inline function getTileSideKey( tileType :UInt, neighborVal :UInt, layer :UInt = LAYERS.BASE ) :String
   {
     var tileKey = '$tileType:s_$neighborVal';
+    // if (layer == LAYERS.BACKGROUND) tileKey += '_bg';
+
     if (!TYPES.tileFrames.exists(tileKey)) throw new Error('tileFrames $tileKey not found.');
 
     if (variantCounts.exists(tileKey))

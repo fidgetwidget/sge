@@ -1,8 +1,11 @@
 package games.tileworld;
 
+import openfl.Assets;
 import openfl.display.BitmapData;
 
-typedef TilesetData = {
+
+@:publicFields
+class TilesetData {
 
   var name :String;
   var id :UInt;
@@ -17,5 +20,15 @@ typedef TilesetData = {
   var bitwiseFrames :Array<TileFrameData>;
   var variants :Map< String, Array<TileFrameData> >;
   var sideFrames :Array<TileFrameData>;
+
+  function new( name :String, id :UInt, filename :String, rgb :String ) 
+  {
+    this.name = name;
+    this.id = id;
+    this.filename = filename;
+
+    this.rgb = Std.parseInt(rgb);
+    this.source = Assets.getBitmapData('tiles/$filename');
+  }
 
 }

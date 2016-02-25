@@ -46,27 +46,27 @@ class Region {
   }
 
 
-  public inline function setTile( x :Float, y :Float, tile :Tile ) :Void
+  // public inline function setTile( x :Float, y :Float, tile :Tile ) :Void
+  // {
+  //   var chunk = getChunk(x, y);
+  //   chunk.setTile(x, y, tile);
+  //   chunkChanged(chunk);
+  // }
+
+
+  public function setTileType( x :Float, y :Float, tileType :Int, layer :UInt = LAYERS.BASE ) :Void
   {
     var chunk = getChunk(x, y);
-    chunk.setTile(x, y, tile);
+    chunk.setTileType( x, y, tileType, layer );
     chunkChanged(chunk);
   }
 
 
-  public function setTileType( x :Float, y :Float, tileType :Int ) :Void
-  {
-    var chunk = getChunk(x, y);
-    chunk.setTileType( x, y, tileType );
-    chunkChanged(chunk);
-  }
-
-
-  public inline function getTile( x :Float, y :Float ) :Tile
+  public inline function getTile( x :Float, y :Float, layer :UInt = LAYERS.BASE ) :Tile
   {
     var index = worldPosition_chunkIndex(x, y);
     var chunk = chunks[index];
-    return chunk.getTile(x, y);
+    return chunk.getTile(x, y, layer);
   }
 
 

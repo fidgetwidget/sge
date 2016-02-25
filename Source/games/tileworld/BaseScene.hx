@@ -27,34 +27,33 @@ class BaseScene extends Scene
   var tileData : BitmapData;
   var world : World;
   var player :Player;
-  var fps : FPS;
-  var mem : MemUsage;
+  // var fps : FPS;
+  // var mem : MemUsage;
   var debugText :TextField;
-  var collisionText :TextField;
-  var currentWorldX(get, never) :Float;
-  var currentWorldY(get, never) :Float;
+  // var collisionText :TextField;
   var currentTile :Bitmap;
   var outline :Shape;
 
-  // 
-  // Input Flags & States
-  // 
-  var mouseDragStart :Point;
-  var cameraDragStart :Point;
-  var mouseDragging :Bool = false;
-  var cameraDragging :Bool = false;
-  var rectDragging :Bool = false;
-  var draggingRect :Rectangle;
-  var displayScaleCounter :Int;
+  // current mouse position in the world
+  var currentWorldX(get, never) :Float;
+  var currentWorldY(get, never) :Float;
+  // tile placement
   var placeableTileTypes :Array<Int>;
   var currentTileType(get, set) :Int;
   var currentTileTypeIndex(get, set) :Int;
-
+  // movement input helpers
+  var mouseDragStart :Point;
+  var cameraDragStart :Point;
+  var draggingRect :Rectangle;
+  var displayScaleCounter :Int;
+  // Flags
+  var mouseDragging :Bool = false;
+  var cameraDragging :Bool = false;
+  var rectDragging :Bool = false;
   var renderBounds :Bool = false;
   var renderCollisions :Bool = false;
   var resolveCollisions (get, never) :Bool;
   
-
 
 
   public function new() 
@@ -64,102 +63,57 @@ class BaseScene extends Scene
     tileData = Assets.getBitmapData("images/tiles.png");
     TYPES.init();
 
+    camera = new Camera();
+    placeableTileTypes = [TYPES.NONE, TYPES.DIRT, TYPES.STONE, TYPES.CLAY];
     mouseDragStart = new Point();
     cameraDragStart = new Point();
-    camera = new Camera();
     draggingRect = new Rectangle();
-
-    placeableTileTypes = [TYPES.NONE, TYPES.DIRT, TYPES.STONE, TYPES.CLAY];
   }
 
 
   override private function onReady() 
   {
-    camera.bounds.width = Game.root.stage.stageWidth;
-    camera.bounds.height = Game.root.stage.stageHeight;
-
-    camera.MIN_SCALE = 0.2;
-    camera.MAX_SCALE = 6;
+    init_camera();
 
     world = new World(this);
     player = new Player(this);
-    _sprite.addChild(world.image);
-    _sprite.addChild(player.image);
-    
     init_textFields();
     init_currentTile();
 
-    reset_camera();
-  }
-
-
-  inline function init_textFields() :Void
-  {
-    fps = new FPS( Game.root.stage.stageWidth - 150, 0, 0x333333 );
-    fps.autoSize = TextFieldAutoSize.RIGHT;
-    fps.defaultTextFormat = new TextFormat('Arial', 32);
-    _sprite.addChild(fps);
-
-    mem = new MemUsage( Game.root.stage.stageWidth - 300, 0, 0x333333 );
-    mem.autoSize = TextFieldAutoSize.RIGHT;
-    mem.defaultTextFormat = new TextFormat('Arial', 32);
-    _sprite.addChild(mem);
-
-    debugText = new TextField();    
-    debugText.autoSize = TextFieldAutoSize.LEFT;
-    debugText.selectable = false;
-    debugText.defaultTextFormat = new TextFormat('Arial', 32);
-    _sprite.addChild(debugText);
-
-    collisionText = new TextField();
-    collisionText.y = Game.root.stage.stageHeight - 160;
-    collisionText.autoSize = TextFieldAutoSize.LEFT;
-    collisionText.selectable = false;
-    collisionText.defaultTextFormat = new TextFormat('Arial', 32);
-    _sprite.addChild(collisionText);
-  }
-
-
-  inline function init_currentTile() :Void
-  {
-    var bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, true, 0xffffff);
-    
-    currentTile = new Bitmap(bitmapData);
-    outline = new Shape();
-
-    currentTileType = TYPES.DIRT;
+    _sprite.addChild(world.image);
+    _sprite.addChild(player.image);
 
     _sprite.addChild(currentTile);
     _sprite.addChild(outline);
+
+    // _sprite.addChild(fps);
+    // _sprite.addChild(mem);
+    // _sprite.addChild(debugText);
+    // _sprite.addChild(collisionText);
+
+    reset_camera();
   }
 
 
   override public function update()
   {
     Game.ruler.startMarker('update', 0xff0000);
-
-    debugText.text = '';
-    collisionText.text = '';
-
+    // reset the text
+    // debugText.text = '';
+    // collisionText.text = '';
+    // get the current user input
     handleInput();
-    world.update();
 
+    world.update();
     player.update();
+
     if (resolveCollisions)
     {
-      collisions = world.collisionCheck(player.bounds, collisions);
-      while (collisions.length > 0)
-      {
-        smallest = Collision.getSmallest(collisions).smallest();
-        player.resolveCollision(smallest.px, smallest.py);
-        collisions = world.collisionCheck(player.bounds, collisions);
-      }
+      update_collisions();
     }
     
     Game.ruler.endMarker('update');
   }
-  var smallest :Collision;
-  var collisions :Array<Collision>;
 
 
   override public function render()
@@ -180,7 +134,173 @@ class BaseScene extends Scene
 
     Game.ruler.endMarker('render');
   }
+  
 
+  override function handleInput() :Void
+  {
+    input_dragMoveWithSpacebar();
+
+    input_scrollWithMousewheel();
+
+    input_changeCurrentTile();
+
+    input_shiftDragFillRect();
+
+    input_placeTile();
+
+    input_resetCamera();
+
+    input_toggleBoundsRender();
+
+    input_toggleCollisionRender();
+
+    input_saveRegionImage();
+
+    input_showDebugText();
+
+    input_adjustCursor();
+
+    input_currentTile();
+
+    input_player();      
+  }
+
+
+  // +----------------------------------------+
+  // |                                        |
+  // |                HELPERS                 |
+  // |                                        |
+  // +----------------------------------------+
+
+  // 
+  // Camera
+  // 
+
+  inline function reset_camera() :Void
+  {
+    setScale(2);
+    camera.centerX = CONST.REGION_WIDTH * 0.5;
+    camera.centerY = CONST.REGION_HEIGHT * 0.5;
+    player.setPosition(CONST.REGION_WIDTH * 0.5, CONST.REGION_HEIGHT * 0.5);
+
+    draggingRect.x = player.x - 120;
+    draggingRect.y = player.y + 120;
+    draggingRect.width = 240;
+    draggingRect.height = 20;
+    placeTile_rect(draggingRect, TYPES.DIRT);
+  }
+
+  inline function setScale( value :Float ) :Void
+  {
+    camera.scale = value;
+    world.image.scaleX = player.image.scaleX = currentTile.scaleX = camera.scaleX;
+    world.image.scaleY = player.image.scaleY = currentTile.scaleY = camera.scaleY;
+  }
+
+  // 
+  // Player Actions
+  // 
+  inline function placeTile( x:Float, y:Float, type :Int, layer :UInt = LAYERS.BASE )
+  {
+    world.setTileType(x, y, type, layer);
+  }
+
+  inline function placeTile_rect( rect :Rectangle, type :Int, layer :UInt = LAYERS.BASE )
+  {
+    var l = rect.left;
+    var t = rect.top;
+    while( l < rect.right )
+    {
+      while ( t < rect.bottom )
+      {
+        placeTile( l, t, currentTileType, layer );
+        t += CONST.TILE_HEIGHT;
+      }
+      t = rect.top;
+      l += CONST.TILE_WIDTH;
+    }
+  }
+
+  // This only works on native platforms right now
+  inline function saveRegionToImage( region :Region ) :Void
+  {
+#if (sys)
+    var rx = Math.floor(region.x / CONST.REGION_WIDTH);
+    var ry = Math.floor(region.y / CONST.REGION_HEIGHT);
+    var imageData = region.cache;
+    var fileName = 'region_x${rx}_y${ry}.png';
+    var path = '/${fileName}';
+
+    Lib.saveImage( imageData, path, sge.lib.SystemDirectory.DESKTOP );
+#end
+  }
+
+  // 
+  // Init Heleprs
+  // 
+
+  inline function init_camera() :Void
+  {
+    camera.bounds.width = Game.root.stage.stageWidth;
+    camera.bounds.height = Game.root.stage.stageHeight;
+    camera.MIN_SCALE = 0.2;
+    camera.MAX_SCALE = 6;
+  }
+
+
+  inline function init_textFields() :Void
+  {
+    // TODO: move this stuff to the engine itself
+    // create a debug text area that can be toggled with the ~ key
+    
+    // fps = new FPS( Game.root.stage.stageWidth - 150, 0, 0x333333 );
+    // fps.autoSize = TextFieldAutoSize.RIGHT;
+    // fps.defaultTextFormat = new TextFormat('Arial', 32);
+
+    // mem = new MemUsage( Game.root.stage.stageWidth - 300, 0, 0x333333 );
+    // mem.autoSize = TextFieldAutoSize.RIGHT;
+    // mem.defaultTextFormat = new TextFormat('Arial', 32);
+    
+    // debugText = new TextField();    
+    // debugText.autoSize = TextFieldAutoSize.LEFT;
+    // debugText.selectable = false;
+    // debugText.defaultTextFormat = new TextFormat('Arial', 32);
+    
+    // collisionText = new TextField();
+    // collisionText.y = Game.root.stage.stageHeight - 160;
+    // collisionText.autoSize = TextFieldAutoSize.LEFT;
+    // collisionText.selectable = false;
+    // collisionText.defaultTextFormat = new TextFormat('Arial', 32);
+  }
+
+
+  inline function init_currentTile() :Void
+  {
+    var bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, true, 0xffffff);
+    currentTile = new Bitmap(bitmapData, PixelSnapping.ALWAYS, false);
+    outline = new Shape();
+    currentTileType = TYPES.DIRT;
+  }
+
+  // 
+  // Update Heleprs
+  // 
+
+  inline function update_collisions() :Void
+  {
+    collisions = world.collisionCheck(player.bounds, collisions);
+    while (collisions.length > 0)
+    {
+      smallest = Collision.getSmallest(collisions).smallest();
+      player.resolveCollision(smallest.px, smallest.py);
+      collisions = world.collisionCheck(player.bounds, collisions);
+    }
+    if (player.velocityY == 0) player.canJump = true;
+  }
+
+  // 
+  // Render Helpers
+  // 
 
   inline function render_currentTile() :Void
   {
@@ -247,10 +367,8 @@ class BaseScene extends Scene
     hh = player.bounds.height * camera.scaleX;
 
     g.drawRect(xx, yy, ww, hh);
-
   }
 
-  var _tiles :Array<Tile>;
 
   inline function render_collision() :Void
   {
@@ -303,7 +421,7 @@ class BaseScene extends Scene
     collisions = world.collisionCheck(player.bounds, collisions);
     if (collisions.length > 0)
     {
-      collisionText.text = '${collisions.length}';
+      // collisionText.text = '${collisions.length}';
 
       smallest = Collision.getSmallest(collisions).smallest();
       if (smallest.px != 0 || smallest.py != 0)
@@ -313,69 +431,14 @@ class BaseScene extends Scene
         g.lineTo(xx, yy);  
       }
 
-      collisionText.text += ' ${smallest.px}|${smallest.py}';
+      // collisionText.text += ' ${smallest.px}|${smallest.py}';
     }
     
   }
 
   // 
-  // Camera
+  // Input Helpers
   // 
-
-  inline function reset_camera() :Void
-  {
-    setScale(2);
-    camera.centerX = CONST.REGION_WIDTH * 0.5;
-    camera.centerY = CONST.REGION_HEIGHT * 0.5;
-    player.setPosition(CONST.REGION_WIDTH * 0.5, CONST.REGION_HEIGHT * 0.5);
-
-    draggingRect.x = player.x - 120;
-    draggingRect.y = player.y + 120;
-    draggingRect.width = 240;
-    draggingRect.height = 20;
-    placeTile_rect(draggingRect, TYPES.DIRT);
-  }
-
-  inline function setScale( value :Float ) :Void
-  {
-    camera.scale = value;
-    world.image.scaleX = player.image.scaleX = currentTile.scaleX = camera.scaleX;
-    world.image.scaleY = player.image.scaleY = currentTile.scaleY = camera.scaleY;
-  }
-
-
-  // 
-  // Input
-  // 
-
-  override function handleInput() :Void
-  {
-    input_dragMoveWithSpacebar();
-
-    input_scrollWithMousewheel();
-
-    input_changeCurrentTile();
-
-    input_shiftDragFillRect();
-
-    input_placeTile();
-
-    input_resetCamera();
-
-    input_toggleBoundsRender();
-
-    input_toggleCollisionRender();
-
-    input_saveRegionImage();
-
-    input_showDebugText();
-
-    input_adjustCursor();
-
-    input_currentTile();
-
-    input_player();      
-  }
 
 
   inline function input_showDebugText() :Void
@@ -402,7 +465,7 @@ class BaseScene extends Scene
       var tileCollision = world.getTileCollisionValue(xx, yy);
       text += '_col$tileCollision';
 
-      debugText.text = text;
+      // debugText.text = text;
     }
   }
 
@@ -462,7 +525,7 @@ class BaseScene extends Scene
 
     if (displayScaleCounter > 0)
     {
-      debugText.text = 'scale: ${camera.scaleX}';
+      // debugText.text = 'scale: ${camera.scaleX}';
       displayScaleCounter--;
     }
   }
@@ -483,6 +546,7 @@ class BaseScene extends Scene
     var input = Game.inputManager;
     var xx = currentWorldX;
     var yy = currentWorldY;
+    var layer = 0;
 
     // When one is down and the other is pressed
     if (input.keyboard.isDown( Keyboard.SHIFT ) && input.mouse.isDown() &&
@@ -504,7 +568,9 @@ class BaseScene extends Scene
 
     if ( rectDragging && (input.keyboard.isReleased( Keyboard.SHIFT ) || input.mouse.isReleased() ) )
     {
-      placeTile_rect(draggingRect, currentTileType);
+      if (input.keyboard.isDown(Keyboard.ALTERNATE)) layer = LAYERS.BACKGROUND;
+
+      placeTile_rect(draggingRect, currentTileType, layer);
       mouseDragging = false;
       rectDragging = false;
     }
@@ -514,10 +580,12 @@ class BaseScene extends Scene
   inline function input_placeTile() :Void
   {
     var input = Game.inputManager;
+    var layer = 0;
 
     if (input.mouse.isDown() && !mouseDragging)
     {
-      placeTile(currentWorldX, currentWorldY, currentTileType);
+      if (input.keyboard.isDown(Keyboard.ALTERNATE)) layer = LAYERS.BACKGROUND;
+      placeTile(currentWorldX, currentWorldY, currentTileType, layer);
     }
   }
 
@@ -552,7 +620,7 @@ class BaseScene extends Scene
   {
     var input = Game.inputManager;
 
-    if (input.keyboard.isPressed( Keyboard.S )) 
+    if (input.keyboard.isPressed( Keyboard.P )) 
     {
       var region = world.getRegion(currentWorldX, currentWorldY, false);
 
@@ -591,14 +659,14 @@ class BaseScene extends Scene
 
     var input = Game.inputManager;
 
-    if (input.keyboard.isDown(Keyboard.LEFT) ||
-      input.keyboard.isDown(Keyboard.RIGHT))
+    if (input.keyboard.isDown(Keyboard.LEFT) || input.keyboard.isDown(Keyboard.A) ||
+       input.keyboard.isDown(Keyboard.RIGHT) || input.keyboard.isDown(Keyboard.D))
     {
-      if (input.keyboard.isDown(Keyboard.LEFT))
+      if (input.keyboard.isDown(Keyboard.LEFT) || input.keyboard.isDown(Keyboard.A))
       {
         player.velocityX = -4;
       } 
-      if (input.keyboard.isDown(Keyboard.RIGHT))
+      if (input.keyboard.isDown(Keyboard.RIGHT) || input.keyboard.isDown(Keyboard.D))
       {
         player.velocityX = 4;
       } 
@@ -611,9 +679,10 @@ class BaseScene extends Scene
     if (!renderCollisions)
     {
       if (input.keyboard.isPressed(Keyboard.Z) ||
-          input.keyboard.isPressed(Keyboard.UP))
+          input.keyboard.isPressed(Keyboard.UP) ||
+          input.keyboard.isPressed(Keyboard.W))
       {
-        player.velocityY -= CONST.JUMP_POWER;
+        if (player.canJump) player.velocityY -= CONST.JUMP_POWER; player.canJump = false;
       }
       // gravity
       player.velocityY += CONST.GRAVITY_ACCELERATION;
@@ -640,54 +709,14 @@ class BaseScene extends Scene
   }
 
   // 
-  // Helpers
-  // 
-
-  inline function placeTile( x:Float, y:Float, type :Int )
-  {
-    world.setTileType(x, y, type);
-  }
-
-  // TOOD: figure out some way to make this faster...
-  inline function placeTile_rect( rect :Rectangle, type :Int )
-  {
-    var l = rect.left;
-    var t = rect.top;
-    while( l < rect.right )
-    {
-      while ( t < rect.bottom )
-      {
-        placeTile( l, t, currentTileType );
-        t += CONST.TILE_HEIGHT;
-      }
-      t = rect.top;
-      l += CONST.TILE_WIDTH;
-    }
-  }
-
-  inline function saveRegionToImage( region :Region ) :Void
-  {
-    var rx = Math.floor(region.x / CONST.REGION_WIDTH);
-    var ry = Math.floor(region.y / CONST.REGION_HEIGHT);
-    var imageData = region.cache;
-    var fileName = 'region_x${rx}_y${ry}.png';
-    var path = '/${fileName}';
-#if (sys)
-    Lib.saveImage( imageData, path, sge.lib.SystemDirectory.DESKTOP );
-#end
-  }
-
-  inline function get_currentWorldX() :Float return (Game.inputManager.mouse.mouseX / camera.scaleX) + camera.x;
-  inline function get_currentWorldY() :Float return (Game.inputManager.mouse.mouseY / camera.scaleY) + camera.y;
-
-  inline function get_resolveCollisions() :Bool return !renderCollisions;
-
-  // 
   // Properties
   // 
   
   var _currentTileTypeIndex :Int;
   var _currentTileType :Int;
+  var _tiles :Array<Tile>;
+  var smallest :Collision;
+  var collisions :Array<Collision>;
 
   inline function get_currentTileType() :Int return _currentTileType;
   inline function set_currentTileType( value :Int ) :Int 
@@ -708,5 +737,10 @@ class BaseScene extends Scene
     TYPES.setBitmapToTileType(currentTile.bitmapData, _currentTileType);
     return _currentTileTypeIndex;
   }
+
+  inline function get_currentWorldX() :Float return (Game.inputManager.mouse.mouseX / camera.scaleX) + camera.x;
+  inline function get_currentWorldY() :Float return (Game.inputManager.mouse.mouseY / camera.scaleY) + camera.y;
+
+  inline function get_resolveCollisions() :Bool return !renderCollisions;
 
 }

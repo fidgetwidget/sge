@@ -6,9 +6,11 @@ import openfl.display.DisplayObjectContainer;
 import openfl.display.Sprite;
 import openfl.display.Stage;
 import openfl.events.Event;
+import sge.lib.Debug;
 import sge.lib.TimeRuler;
 import sge.scene.SceneManager;
 import sge.input.InputManager;
+
 
 class Game {
 
@@ -27,6 +29,8 @@ class Game {
   public static var isPaused (get, never) : Bool;
 
   public static var ruler (get, never) : TimeRuler;
+
+  public static var debug (get, never) : Debug;
 
   public static var debugMode :Bool = false;
 
@@ -81,7 +85,6 @@ class Game {
     _start = _current = Timer.stamp();
     _isPaused = false;
     _delta = 0;
-    _ruler = new TimeRuler();
 
     _sceneManager = new SceneManager();
     _inputManager = new InputManager();
@@ -96,7 +99,11 @@ class Game {
     root.stage.addChild(sceneSprite);
     root.stage.addChild(debugSprite);
 
-    if (Game.debugMode || Game.drawTimeRuler) _ruler.init();
+    _debug = new Debug();
+    _ruler = new TimeRuler();
+    
+    debugSprite.addChild(_debug);
+    debugSprite.addChild(_ruler);
 
   }
 
@@ -116,9 +123,6 @@ class Game {
   public function update () : Void {
     
     if (_isPaused) return;
-
-    if (Game.debugMode || Game.drawTimeRuler) _ruler.end();
-    if (Game.debugMode || Game.drawTimeRuler) _ruler.start();
 
     _updateDelta();
     _preUpdate();
@@ -179,6 +183,8 @@ class Game {
 
   private var _ruler :TimeRuler;
 
+  private var _debug :Debug;
+
   private var sceneSprite :Sprite;
 
   private var debugSprite :Sprite;
@@ -200,6 +206,8 @@ class Game {
   static inline private function get_isPaused() :Bool return Game.self != null ? Game.self._isPaused : true;
 
   static inline private function get_ruler() :TimeRuler return Game.self != null ? Game.self._ruler : null;
+
+  static inline private function get_debug() :Debug return Game.self != null ? Game.self._debug : null;
  
 
 }

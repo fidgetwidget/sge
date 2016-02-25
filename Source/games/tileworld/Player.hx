@@ -46,11 +46,16 @@ class Player {
 
   public var direction (get, never) :Int;
 
+  public var canJump :Bool = false;
+
 
   var scene :Scene;
   var camera :Camera;
+  var imageOffsetX :Float; // the offset for player position to image position
+  var imageOffsetY :Float; // the offset for player position to image position
 
   var camera_x (get, never) :Float;
+
   var camera_y (get, never) :Float;
 
   // 
@@ -66,8 +71,11 @@ class Player {
     _height = 64;
     velocityX = 0;
     velocityY = 0;
+    imageOffsetX = 16;
+    imageOffsetY = 64;
 
     bounds = AABB.make_rect(0, 0, width, height);
+    bounds.width = 24;
 
     var bitmapData = new BitmapData( width, height, true, 0 );
     var rect :Rectangle = new Rectangle(0, 0, width, height);
@@ -107,8 +115,8 @@ class Player {
     bounds.centerX = x;
     bounds.y = y;
 
-    image.x = (bounds.x - camera.x) * camera.scaleX;
-    image.y = (bounds.y - camera.y) * camera.scaleY;
+    image.x = (x - imageOffsetX - camera.x) * camera.scaleX;
+    image.y = (y - imageOffsetY - camera.y) * camera.scaleY;
 
     if (direction != 0)
     {
@@ -117,7 +125,7 @@ class Player {
     
     if (image.scaleX < 0)
     {
-      image.x = (bounds.x + width - camera.x) * camera.scaleX;
+      image.x = (x - imageOffsetX + width - camera.x) * camera.scaleX;
     }
   }
 

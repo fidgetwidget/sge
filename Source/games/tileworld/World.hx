@@ -34,6 +34,9 @@ class World {
 
   var camera_x (get, never) :Float;
   var camera_y (get, never) :Float;
+
+  var rect :Rectangle;
+  var zero :Point;
   
 
   public function new( scene :Scene )
@@ -46,6 +49,9 @@ class World {
     regions = new Map();
     regionBitmaps = new Map();
     collisionBitmaps = new Map();
+
+    rect = new Rectangle(0, 0, CONST.REGION_WIDTH, CONST.REGION_HEIGHT);
+    zero = new Point();
 
     init_regions();
   }
@@ -65,7 +71,14 @@ class World {
       var regionBitmap = regionBitmaps.get(regionKey);
 
       // Update the region's image
-      if (region.dirty) regionBitmap.bitmapData = region.cache;
+      if (region.dirty) 
+      {
+#if (html5)
+        regionBitmap.bitmapData = region.cache.clone(); // because we can't have bitmapData referenced by more than one thing?
+#else
+        regionBitmap.bitmapData = region.cache;
+#end
+      }
 
       regionBitmap.x = region.x - camera_x;
       regionBitmap.y = region.y - camera_y;
@@ -105,10 +118,10 @@ class World {
           collisions.push(collision);
         }
 
-        yy += CONST.TILE_HEIGHT;
+        yy += Math.min( CONST.TILE_HEIGHT, aabb.halfHeight );
       }
       yy = aabb.top;
-      xx += CONST.TILE_WIDTH;
+      xx += Math.min( CONST.TILE_WIDTH, aabb.halfWidth );
     }
     return collisions;
   }
@@ -118,9 +131,10 @@ class World {
 
   public function collision_tile( aabb :AABB, tile :Tile ) :Collision
   {
-    
+    if (tile.type == TYPES.NONE) return null; // need to figure out why this happens...
     var dir = getTileCollisionValue(tile.worldX, tile.worldY);
     if (dir == NEIGHBORS.NONE) return null;
+
 
     var tileHalfWidth = (CONST.TILE_WIDTH * 0.5);
     var tileCenterX = tile.worldX + tileHalfWidth;    
@@ -249,27 +263,29 @@ class World {
   
   // Tiles
 
-  public function getTile( x :Float, y :Float ) :Tile
+  public function getTile( x :Float, y :Float, layer :UInt = 0 ) :Tile
   {
     var region = getRegion(x, y);
-    return region.getTile(x, y);
+    return region.getTile(x, y, layer);
   }
 
 
-  public function setTileType( x :Float, y :Float, tileType :Int ) :Void
+  public function setTileType( x :Float, y :Float, tileType :Int, layer :UInt = 0 ) :Void
   {
     var region = getRegion(x, y);
-    region.setTileType(x, y, tileType);
+    region.setTileType(x, y, tileType, layer);
   }
 
-
-  public function tileChanged( x :Float, y :Float ) :Tile
+  // 
+  // 
+  // 
+  public function touchTile( x :Float, y :Float ) :Void
   {
-    var region = getRegion(x, y);
-    var chunk = region.getChunk(x, y);
-    var tile = chunk.getTile(x, y);
+    var chunk = getRegion(x, y).getChunk(x, y);
+    var tile = chunk.getTile(x, y, LAYERS.BASE);
     chunk.tileChanged(tile);
-    return tile;
+    tile = chunk.getTile(x, y, LAYERS.BACKGROUND);
+    chunk.tileChanged(tile);
   }
 
 
