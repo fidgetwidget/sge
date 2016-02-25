@@ -103,15 +103,10 @@ class TilesetImporter {
 
   public function importTileTypes( path :String ) :Map<Int, TilesetData>
   {
-    trace('importing $path');
-
     var results :Map< Int, TilesetData > = new Map();
 
     jsonString = Assets.getText(path);
     jsonData = Json.parse(jsonString);
-
-    trace(jsonData);
-
     bitwiseMap = jsonData.neighborBitwiseMap;
     bitwiseMap = bitwiseMap == null ? DEFAULT_BITWISE_MAP : bitwiseMap;
     sideMap = jsonData.sideMap;
@@ -131,15 +126,16 @@ class TilesetImporter {
         continue;
       }
 
+      // we have to do this for the less strict targets 
       x = Reflect.hasField(type, "x") ? Std.parseInt(type.x) : 0;
       y = Reflect.hasField(type, "y") ? Std.parseInt(type.y) : 0;
       width = Reflect.hasField(type, "width") ? Std.parseInt(type.width) : 0;
       height = Reflect.hasField(type, "height") ? Std.parseInt(type.height) : 0;
+
       width = (width == 0) ? CONST.TILE_WIDTH : width;
       height = (height == 0) ? CONST.TILE_HEIGHT : height;
 
       var sourceWidth = tilesetData.source.width;
-      trace(sourceWidth);
       columns = Math.floor(sourceWidth / width);
       
       tilesetData.bitwiseFrames = getTileFrames( x, y, width, height, columns, bitwiseMap );
@@ -316,8 +312,6 @@ class TilesetImporter {
 
   inline function getTileFrame( x :Int, y :Int, tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int ) :TileFrameData
   {
-    trace('getTileFrame { x$x, y$y, tile_x$tile_x, tile_y$tile_y, tile_width$tile_width, tile_height$tile_height }');
-
     rect.x = x = tile_x + (x * tile_width);
     rect.y = y = tile_y + (y * tile_height);
     rect.width = tile_width;

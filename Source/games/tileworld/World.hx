@@ -71,14 +71,7 @@ class World {
       var regionBitmap = regionBitmaps.get(regionKey);
 
       // Update the region's image
-      if (region.dirty) 
-      {
-#if (html5)
-        regionBitmap.bitmapData = region.cache.clone(); // because we can't have bitmapData referenced by more than one thing?
-#else
-        regionBitmap.bitmapData = region.cache;
-#end
-      }
+      if (region.dirty) regionBitmap.bitmapData = region.cache;
 
       regionBitmap.x = region.x - camera_x;
       regionBitmap.y = region.y - camera_y;

@@ -35,9 +35,6 @@ class TYPES {
 
     var importer :TilesetImporter = new TilesetImporter();
     var results :Map< Int, TilesetData > = importer.importTileTypes('data/tiles.json');
-#if (html5)
-    trace(results);
-#end
 
     // trace('adding results');
 
@@ -56,13 +53,7 @@ class TYPES {
       {
         tileKey = '$key';
         tileFrame = value.tileFrame;
-#if (html5)
-        bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
-        bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
-        trace(bitmapData);
-#else
         bitmapData = tileFrame.bitmapData;
-#end
         TYPES.tileFrames.set(tileKey, bitmapData);
       }
 
@@ -72,13 +63,7 @@ class TYPES {
         {
           tileKey = '$key:$bitwiseKey';
           tileFrame = value.bitwiseFrames[bitwiseKey];
-#if (html5)
-          bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
-          bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
-          trace(bitmapData);
-#else
           bitmapData = tileFrame.bitmapData;
-#end
           TYPES.tileFrames.set(tileKey, bitmapData);
         }
       }       
@@ -90,13 +75,7 @@ class TYPES {
           neighborVal = NEIGHBORS.getNeighborVal(sideIndex);
           tileKey = '$key:s_$neighborVal';
           tileFrame = value.sideFrames[sideIndex];
-#if (html5)
-          bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
-          bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
-          trace(bitmapData);
-#else
           bitmapData = tileFrame.bitmapData;
-#end
           TYPES.tileFrames.set(tileKey, bitmapData);
         }
       }
@@ -113,13 +92,7 @@ class TYPES {
           {
             varTileKey = '${tileKey}_${vi}';
             tileFrame = frames[vi];
-#if (html5)
-            bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, false);
-            bitmapData.copyPixels(tileFrame.bitmapData, TYPES.rect, TYPES.zero);
-            trace(bitmapData);
-#else
             bitmapData = tileFrame.bitmapData;
-#end
             TYPES.tileFrames.set(varTileKey, bitmapData);
           }
         }
