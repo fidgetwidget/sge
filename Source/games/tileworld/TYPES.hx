@@ -111,10 +111,8 @@ class TYPES {
   {
     if (TYPES.tileFrames == null) throw new Error("tileFrames is null");
 
-    var tileKey = TYPES.getTileKey(tileType, modifier, neighbors);
-    var tileBitmapData = TYPES.tileFrames.get(tileKey);
-    // trace('setBitmapToTileType: $tileKey');
-    // trace(tileBitmapData);
+    tileKey = TYPES.getTileKey(tileType, modifier, neighbors);
+    tileBitmapData = TYPES.tileFrames.get(tileKey);
     bitmapData.copyPixels( tileBitmapData, TYPES.rect, TYPES.zero );
   }
 
@@ -123,15 +121,15 @@ class TYPES {
   {
     for (sideIndex in 0...sides.length)
     {
-      var tileType = sides[sideIndex];
+      tileType = sides[sideIndex];
       if (tileType == 0 || (type > tileType && !ignoreTypePriority)) continue;
 
-      var neighborVal = NEIGHBORS.getNeighborVal(sideIndex);
-      var sideTileKey = getTileSideKey(tileType, neighborVal);
+      neighborVal = NEIGHBORS.getNeighborVal(sideIndex);
+      sideKey = getTileSideKey(tileType, neighborVal);
 
-      var sideTileBitmapData = TYPES.tileFrames.get(sideTileKey);
+      sideBitmapData = TYPES.tileFrames.get(sideKey);
 
-      bitmapData.copyPixels( sideTileBitmapData, TYPES.rect, TYPES.zero, null, null, true);
+      bitmapData.copyPixels( sideBitmapData, TYPES.rect, TYPES.zero, null, null, true);
     }
   }
 
@@ -143,7 +141,7 @@ class TYPES {
 
   public static inline function getTileKey( tileType :UInt, modifier :Int, neighbors :UInt, layer :UInt = LAYERS.BASE, noVariants :Bool = false ) :String
   {
-    var tileKey = '$tileType:$neighbors';
+    tileKey = '$tileType:$neighbors';
     // if (layer == LAYERS.BACKGROUND) tileKey += '_bg';
 
     if (!TYPES.tileFrames.exists(tileKey)) 
@@ -155,9 +153,9 @@ class TYPES {
 
     if (variantCounts.exists(tileKey) && !noVariants)
     {
-      var count = variantCounts.get(tileKey);
-      var r = Lib.random_int(0, count);
-      if (r < count) tileKey += '_$r';
+      count = variantCounts.get(tileKey);
+      rnd = Lib.random_int(0, count);
+      if (rnd < count) tileKey += '_$rnd';
     }
 
     return tileKey;
@@ -165,20 +163,29 @@ class TYPES {
 
   public static inline function getTileSideKey( tileType :UInt, neighborVal :UInt, layer :UInt = LAYERS.BASE ) :String
   {
-    var tileKey = '$tileType:s_$neighborVal';
+    tileKey = '$tileType:s_$neighborVal';
     // if (layer == LAYERS.BACKGROUND) tileKey += '_bg';
 
     if (!TYPES.tileFrames.exists(tileKey)) throw new Error('tileFrames $tileKey not found.');
 
     if (variantCounts.exists(tileKey))
     {
-      var count = variantCounts.get(tileKey);
-      var r = Lib.random_int(0, count);
-      if (r < count) tileKey += '_$r';
+      count = variantCounts.get(tileKey);
+      rnd = Lib.random_int(0, count);
+      if (rnd < count) tileKey += '_$rnd';
     }
 
     return tileKey;
   }
+
+  static var tileKey :String;
+  static var tileBitmapData :BitmapData;
+  static var neighborVal :Int;
+  static var tileType :Int;
+  static var sideKey :String;
+  static var sideBitmapData :BitmapData;
+  static var count :Int;
+  static var rnd :Int;
 
 
 

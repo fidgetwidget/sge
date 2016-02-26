@@ -56,7 +56,7 @@ class Region {
 
   public function setTileType( x :Float, y :Float, tileType :Int, layer :UInt = LAYERS.BASE ) :Void
   {
-    var chunk = getChunk(x, y);
+    chunk = getChunk(x, y);
     chunk.setTileType( x, y, tileType, layer );
     chunkChanged(chunk);
   }
@@ -64,15 +64,15 @@ class Region {
 
   public inline function getTile( x :Float, y :Float, layer :UInt = LAYERS.BASE ) :Tile
   {
-    var index = worldPosition_chunkIndex(x, y);
-    var chunk = chunks[index];
+    index = worldPosition_chunkIndex(x, y);
+    chunk = chunks[index];
     return chunk.getTile(x, y, layer);
   }
 
 
   public inline function getChunk( x:Float, y :Float ) :Chunk
   {
-    var index = worldPosition_chunkIndex(x, y);
+    index = worldPosition_chunkIndex(x, y);
     return chunks[index];
   }
 
@@ -80,10 +80,12 @@ class Region {
   // because we don't need to support negative indexes
   public inline function getChunkKey( x:Float, y :Float ) :String
   {
-    var chunkX = Math.floor((x - this.x) / CONST.CHUNK_WIDTH);
-    var chunkY = Math.floor((y - this.y) / CONST.CHUNK_HEIGHT);
+    chunkX = Math.floor((x - this.x) / CONST.CHUNK_WIDTH);
+    chunkY = Math.floor((y - this.y) / CONST.CHUNK_HEIGHT);
     return '$chunkX|$chunkY';
   }
+  var chunkX :Int;
+  var chunkY :Int;
 
 
   public inline function getTileType( x :Float, y :Float ) :Int
@@ -105,16 +107,13 @@ class Region {
 
   inline function init_chunks() : Void
   {
-    var chunkXIndex :Int;
-    var chunkYIndex :Int;
-
-    for (chunkYIndex in 0...CONST.REGION_CHUNKS_HIGH)
+    for (cyi in 0...CONST.REGION_CHUNKS_HIGH)
     {
-      for (chunkXIndex in 0...CONST.REGION_CHUNKS_WIDE)
+      for (cxi in 0...CONST.REGION_CHUNKS_WIDE)
       {
-        var chunk = getNewChunk();
-        var xx :Int = chunkXIndex * CONST.CHUNK_WIDTH;
-        var yy :Int = chunkYIndex * CONST.CHUNK_HEIGHT;
+        chunk = getNewChunk();
+        xx = cxi * CONST.CHUNK_WIDTH;
+        yy = cyi * CONST.CHUNK_HEIGHT;
 
         chunk.set(this, xx, yy);
         chunks.push(chunk);
@@ -145,8 +144,8 @@ class Region {
       throw new RangeError("world position outside of the region.");
     }
 
-    var ix :Int = Math.floor( (x - this.x) / CONST.CHUNK_WIDTH );
-    var iy :Int = Math.floor( (y - this.y) / CONST.CHUNK_HEIGHT );
+    ix = Math.floor( (x - this.x) / CONST.CHUNK_WIDTH );
+    iy = Math.floor( (y - this.y) / CONST.CHUNK_HEIGHT );
 
     return getIndex(ix, iy);
   }
@@ -160,7 +159,7 @@ class Region {
     changeCount = 0;
     while (changedChunks.length > 0 && changeCount < MAX_CHANGE_COUNT)
     {
-      var chunk = changedChunks.shift();
+      chunk = changedChunks.shift();
       // trace('region cache update for chunk @ ${chunk.x}|${chunk.y}');
       _chunkTarget.x = chunk.x;
       _chunkTarget.y = chunk.y;
@@ -172,6 +171,14 @@ class Region {
   var changeCount :Int;
   var MAX_CHANGE_COUNT = 4;
 
+  var cxi :Int;
+  var cyi :Int;
+  var xx :Int;
+  var yy :Int;
+  var ix :Int;
+  var iy :Int;
+  var chunk :Chunk;
+  var index :Int;
 
   // 
   // Properties

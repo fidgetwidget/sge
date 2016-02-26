@@ -59,7 +59,7 @@ class Tile {
 
   public function setSide( neighborVal :Int, type :Int ) :Void
   {
-    var sideIndex = NEIGHBORS.getSideIndex(neighborVal);
+    sideIndex = NEIGHBORS.getSideIndex(neighborVal);
 
     if (sides[sideIndex] != type)
     {
@@ -85,6 +85,7 @@ class Tile {
   // Properties
   // 
 
+  var sideIndex :Int;
   var _type     :UInt;
   var _modifier :UInt;
   var _neighbors :UInt;

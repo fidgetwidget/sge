@@ -35,6 +35,7 @@ import openfl.geom.Rectangle;
 // 21, 15, 18, 12, 3, 9, 0, 6, 20, 14, 19, 13, 2, 8, 1, 7
 // 
 
+// The whole file
 typedef ImportTileTypes = {
 
   var types :Array<ImportTilesetData>;
@@ -43,6 +44,7 @@ typedef ImportTileTypes = {
 
 }
 
+// The tileset
 typedef ImportTilesetData = {
 
   var name :String;
@@ -58,7 +60,7 @@ typedef ImportTilesetData = {
 
 }
 
-
+// Variants
 typedef ImportTileTypeVariantData = {
 
   var key :String; // the part after the : in ${type}:${neighbors} or ${type}:s${side} or ${type}:c${corner}
