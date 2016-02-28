@@ -107,6 +107,13 @@ class TYPES {
   }
 
 
+  public static inline function getTileRGBKey( type :UInt ) :UInt
+  {
+    if (!TYPES.rgbIdMap.exists(type)) throw new openfl.errors.Error('Undefined type');
+    return rgbIdMap.get(type);
+  }
+
+
   public static inline function setBitmapToTileType( bitmapData :BitmapData, tileType :UInt, modifier :UInt = 0, neighbors :Int = 0, layer :UInt = LAYERS.BASE ) :Void
   {
     if (TYPES.tileFrames == null) throw new Error("tileFrames is null");
@@ -196,12 +203,15 @@ class TYPES {
   // 
 
   public static var NONE :UInt = 0;
+  public static var NONE_RGB :UInt = 0x87ceeb; // sky blue
+  
   // Liquids?
 
   // Basic
   public static var DIRT    :UInt = 10;
   public static var CLAY    :UInt = 16;
   public static var STONE   :UInt = 20;
+  public static var PUTTY   :UInt = 24;
   // Ore
   public static var COAL    :UInt = 50;
   public static var COPPER  :UInt = 54;

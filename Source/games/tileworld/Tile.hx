@@ -49,6 +49,7 @@ class Tile {
 
   }
 
+
   public function change( type :UInt, modifier :Int = -1) :Void
   {
     if (type >= 0) _type = type;
@@ -56,6 +57,7 @@ class Tile {
 
     setTileImage();
   }
+
 
   public function setSide( neighborVal :Int, type :Int ) :Void
   {
@@ -129,7 +131,7 @@ class Tile {
   inline function changeTileCorners( corners :UInt ) :Void
   {
     _corners = corners;
-    // setTileImage();
+    // setTileImage(); // TODO: update the corners
   }
 
   inline function get_worldX() :Int return chunk.worldX + this.x;

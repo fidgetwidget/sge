@@ -222,31 +222,36 @@ class World {
     return new Collision(px, py);
   }
 
-
-  public function getTiles_bounds( aabb :AABB, tileArray :Array<Tile> ) :Array<Tile>
+  public function getTiles_rect( x :Float, y :Float, width :Float, height :Float, results :Array<Tile> ) :Array<Tile>
   {
-    if (tileArray == null) tileArray = new Array();
+    if (results == null) results = new Array();
 
-    var xx = aabb.left;
-    var yy = aabb.top;
+    var xx = x;
+    var yy = y;
 
-    while (xx <= aabb.right)
+    while (xx <= x + width)
     {
-      while (yy <= aabb.bottom)
+      while (yy <= y + height)
       {
         var tile = getTile(xx, yy);
-        if (!(tileArray.indexOf(tile) >= 0))
+        if (!(results.indexOf(tile) >= 0))
         {
-          tileArray.push(tile);
+          results.push(tile);
         }
 
         yy += CONST.TILE_HEIGHT;
       }
-      yy = aabb.top;
+      yy = y;
       xx += CONST.TILE_WIDTH;
     }
 
-    return tileArray;
+    return results;
+  }
+
+
+  public function getTiles_bounds( aabb :AABB, results :Array<Tile> ) :Array<Tile>
+  {
+    return getTiles_rect(aabb.left, aabb.top, aabb.width, aabb.height, results);
   }
 
   // 

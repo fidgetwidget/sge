@@ -27,12 +27,16 @@ class Region {
   public var world (default, null) :World;
   public var chunks (default, null) :Array<Chunk>;
   var changedChunks :Array<Chunk>;
+  var mapData :BitmapData;
+  var mapDirty :Bool;
   
 
   public function new() 
   { 
     chunks = new Array();
     changedChunks = new Array();
+    _chunkRect = new Rectangle(0, 0, CONST.CHUNK_WIDTH, CONST.CHUNK_HEIGHT);
+    _chunkTarget = new Point();
   }
 
 
@@ -42,7 +46,7 @@ class Region {
     this.x = x;
     this.y = y;
     init_chunks();
-    init_cache();
+    init_data();
   }
 
 
@@ -84,8 +88,6 @@ class Region {
     chunkY = Math.floor((y - this.y) / CONST.CHUNK_HEIGHT);
     return '$chunkX|$chunkY';
   }
-  var chunkX :Int;
-  var chunkY :Int;
 
 
   public inline function getTileType( x :Float, y :Float ) :Int
@@ -98,6 +100,13 @@ class Region {
   {
     if (changedChunks.indexOf(chunk) >= 0) return;
     changedChunks.push(chunk);
+  }
+
+
+  public inline function getMap() :BitmapData
+  {
+    if (mapDirty) updateMap();
+    return mapData;
   }
 
 
@@ -123,9 +132,11 @@ class Region {
   }
 
 
-  inline function init_cache() :Void 
+  inline function init_data() :Void 
   { 
     _cache = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, false );
+    mapData = new BitmapData( CONST.REGION_TILES_WIDE, CONST.REGION_TILES_HIGH, false );
+    mapDirty = true;
   }
 
 
@@ -153,9 +164,6 @@ class Region {
 
   inline function updateCache() :Void
   {
-    if (_chunkRect == null) _chunkRect = new Rectangle(0, 0, CONST.CHUNK_WIDTH, CONST.CHUNK_HEIGHT);
-    if (_chunkTarget == null) _chunkTarget = new Point();
-
     changeCount = 0;
     while (changedChunks.length > 0 && changeCount < MAX_CHANGE_COUNT)
     {
@@ -168,26 +176,49 @@ class Region {
     }
   }
 
-  var changeCount :Int;
-  var MAX_CHANGE_COUNT = 4;
+  inline function updateMap() :Void
+  {
+    if (_chunkMapRect == null) _chunkMapRect = new Rectangle(0, 0, CONST.CHUNK_TILES_WIDE, CONST.CHUNK_TILES_HIGH);
+    if (_chunkMapTarget == null) _chunkMapTarget = new Point();
 
+    for (cyi in 0...CONST.REGION_CHUNKS_HIGH)
+    {
+      for (cxi in 0...CONST.REGION_CHUNKS_WIDE)
+      {
+        xx = cxi * CONST.CHUNK_WIDTH;
+        yy = cyi * CONST.CHUNK_HEIGHT;
+        chunk = getChunk(xx, yy);
+        _chunkMapTarget.x = cxi;
+        _chunkMapTarget.x = cyi;
+        _chunkMap = chunk.getMap();
+        mapData.copyPixels(_chunkMap, _chunkMapRect, _chunkMapTarget);
+      }
+    }
+  }
+
+  var MAX_CHANGE_COUNT = 4;
+  var _chunkRect :Rectangle;
+  var _chunkMapRect :Rectangle;
+  var _chunkTarget :Point;
+  var _chunkMapTarget :Point;
+  var _chunkMap :BitmapData;
+  var changeCount :Int;
+  var chunk :Chunk;
+  var index :Int;
+  var chunkX :Int;
+  var chunkY :Int;
   var cxi :Int;
   var cyi :Int;
   var xx :Int;
   var yy :Int;
   var ix :Int;
   var iy :Int;
-  var chunk :Chunk;
-  var index :Int;
 
   // 
   // Properties
   // 
 
-
   var _cache :BitmapData;
-  var _chunkRect :Rectangle;
-  var _chunkTarget :Point;
 
   inline function get_dirty() :Bool return changedChunks.length > 0;
 

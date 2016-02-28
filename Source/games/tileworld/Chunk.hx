@@ -44,9 +44,8 @@ class Chunk {
     this.region = region;
     this.x = x;
     this.y = y;
-
     init_tiles();
-    init_cache();
+    init_data();
   }
 
 
@@ -101,6 +100,12 @@ class Chunk {
   }
 
 
+  public inline function getMap() :BitmapData
+  {
+    updateMap();
+    return _mapData;
+  }
+
   // 
   // Internal Functions
   // 
@@ -138,13 +143,14 @@ class Chunk {
   }
 
 
-  inline function init_cache() :Void
+  inline function init_data() :Void
   {
     var w = CONST.CHUNK_WIDTH;
     var h = CONST.CHUNK_HEIGHT;
     _backgroundLayerBitmap = new BitmapData( w, h, true, 0 );
     _collisionLayerBitmap = new BitmapData( w, h, true, 0 );
     _cache = new BitmapData( w, h, true, 0x00ffffff );
+    _mapData = new BitmapData( CONST.CHUNK_TILES_WIDE, CONST.CHUNK_TILES_HIGH, false, TYPES.NONE_RGB);
   }
 
 
@@ -203,6 +209,27 @@ class Chunk {
   }
 
 
+  inline function updateMap() :Void
+  {
+    var tile :Tile;
+    var rgb :UInt;
+    for (tyi in 0...CONST.REGION_CHUNKS_HIGH)
+    {
+      for (txi in 0...CONST.REGION_CHUNKS_WIDE)
+      {
+        tile = getTile(txi * CONST.TILE_WIDTH, tyi * CONST.TILE_HEIGHT, LAYERS.BASE);
+
+        if (tile.type == TYPES.NONE) tile = getTile(txi * CONST.TILE_WIDTH, tyi * CONST.TILE_HEIGHT, LAYERS.BACKGROUND);
+        if (tile.type == TYPES.NONE) 
+          rgb = TYPES.NONE_RGB;
+        else
+          rgb = TYPES.getTileRGBKey( tile.type );
+        _mapData.setPixel(txi, tyi, rgb);
+      }
+    }
+  }
+
+
   // 
   // NEIGHBOR_TYPES: the bitwise neighbor values
   // neithborOffsets: the x,y position index of the tile who's neighbor would be the associated neighborType
@@ -226,11 +253,12 @@ class Chunk {
 
   inline function updateNeighbors( tile :Tile ) :Void
   {
+    // TODO: make these var's class scope namesafe and move them out of here
     var nt  :Tile; // neighbor tile
-    var tw  :Int = CONST.TILE_WIDTH;
-    var th  :Int = CONST.TILE_HEIGHT;
-    var htw :Float = tw * 0.5;
-    var hth :Float = th * 0.5;
+    var tw  :Int = CONST.TILE_WIDTH; // tile width
+    var th  :Int = CONST.TILE_HEIGHT; // tile height
+    var htw :Float = tw * 0.5; // half tile width
+    var hth :Float = th * 0.5; // half tile height
     var n   :UInt = 0;
     var ni  :UInt = 0;
     
@@ -239,8 +267,8 @@ class Chunk {
     var tx  :Float; // tile neighbor x world position
     var ty  :Float; // tile neighbor y world position
     
-    var ntype :UInt;
-    var ttype :UInt;
+    var ntype :UInt; // the neighbor's neighbor value
+    var ttype :UInt; // the tile's neighbor value
     var nval  :UInt = 0;
     var layer :UInt = tile.layer;
 
@@ -249,8 +277,8 @@ class Chunk {
     {
       tnx = CONST.NEIGHBOR_OFFSETS[n]; n++;
       tny = CONST.NEIGHBOR_OFFSETS[n]; n++;
-      tx = worldX + tile.x + (tw * tnx) + htw;
-      ty = worldY + tile.y + (th * tny) + hth;
+      tx = tile.worldX + (tw * tnx) + htw;
+      ty = tile.worldY + (th * tny) + hth;
 
       // we go up to the world to make sure when we cross chunk 
       // and region we can still get the right tile
@@ -269,14 +297,15 @@ class Chunk {
         nt.setSide(ntype, 0);
         tile.setSide(ttype, 0);
       }
-      if (nt.type == TYPES.NONE) continue; // we don't care about the neighbor value of none tiles
-      nval += ttype;
+      if (nt.type != TYPES.NONE)
+        nval += ttype;
+      
       // for some reason doing the += or -= isn't triggering the changeNeighbors
       var val = nt.neighbors;
       if (tile.type == TYPES.NONE)
-        val = val & ~ntype;
+        val &= ~ntype;
       else 
-        val = val | ntype;
+        val |= ntype;
         
       nt.neighbors = val;
       if (layer == LAYERS.COLLISION) updateCollision_neighborsChanged(nt);
@@ -285,30 +314,30 @@ class Chunk {
     if (layer == LAYERS.COLLISION) updateCollision_neighborsChanged(tile);
 
     // Corners
-    ni = n = 0;
-    while (ni < CONST.CORNER_TYPES.length)
-    {
-      tnx = CONST.CORNER_OFFSETS[n]; n++;
-      tny = CONST.CORNER_OFFSETS[n]; n++;
-      tx = worldX + tile.x + (tw * tnx) + htw;
-      ty = worldY + tile.y + (th * tny) + hth;
+    // ni = n = 0;
+    // while (ni < CONST.CORNER_TYPES.length)
+    // {
+    //   tnx = CONST.CORNER_OFFSETS[n]; n++;
+    //   tny = CONST.CORNER_OFFSETS[n]; n++;
+    //   tx = worldX + tile.x + (tw * tnx) + htw;
+    //   ty = worldY + tile.y + (th * tny) + hth;
 
-      nt = region.world.getTile(tx, ty, layer);
-      region.world.touchTile(tx, ty);
+    //   nt = region.world.getTile(tx, ty, layer);
+    //   region.world.touchTile(tx, ty);
 
-      ntype = CONST.CORNER_TYPES[ni]; ni++;
-      if (nt.type == TYPES.NONE) continue;
-      nval += ntype == 16 ? 64 : ntype == 32 ? 128 : ntype == 64 ? 16 : ntype == 128 ? 32 : 0;
+    //   ntype = CONST.CORNER_TYPES[ni]; ni++;
+    //   if (nt.type != TYPES.NONE)
+    //     nval += ntype == 16 ? 64 : ntype == 32 ? 128 : ntype == 64 ? 16 : ntype == 128 ? 32 : 0;
       
-      var val = nt.corners;
-      if (tile.type != TYPES.NONE)
-        val = val | ntype;
-      else
-        val = val & ~ntype;
-      nt.corners = val;
-    }
-    // corners includes the sides value
-    tile.corners = nval;
+    //   var val = nt.corners;
+    //   if (tile.type != TYPES.NONE)
+    //     val = val | ntype;
+    //   else
+    //     val = val & ~ntype;
+    //   nt.corners = val;
+    // }
+    // // corners includes the sides value
+    // tile.corners = nval;
 
     
   }
@@ -323,18 +352,21 @@ class Chunk {
     }
   }
 
-  // 
-  // Properties
-  // 
-  
-  var _cache :BitmapData;
+
   var _backgroundLayerBitmap :BitmapData;
   var _collisionLayerBitmap  :BitmapData;
   var _tileRect :Rectangle;
   var _chunkRect :Rectangle;
   var _tileTarget :Point;
   var _zero :Point;
-  var _isDirty :Bool = false;
+  var _mapData :BitmapData;
+
+
+  // 
+  // Properties
+  // 
+  
+  var _cache :BitmapData;
 
   inline function get_dirty() :Bool return changedTiles.length > 0;
 

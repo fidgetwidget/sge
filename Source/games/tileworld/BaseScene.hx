@@ -23,24 +23,20 @@ import sge.scene.Scene;
 
 class BaseScene extends Scene
 {
-  
+
+  var MAX_DRAW_SIZE :Int = 3;
+  var MIN_DRAW_SIZE :Int = 1;
+  var MAX_COLLISIONS :Int = 32;
+
+  var tries :Int = 0;
+  var placeableTileTypes :Array<Int>;
+
   var tileData : BitmapData;
   var world : World;
   var player :Player;
-  // var fps : FPS;
-  // var mem : MemUsage;
-  var debugText :TextField;
-  // var collisionText :TextField;
   var currentTile :Bitmap;
   var outline :Shape;
 
-  // current mouse position in the world
-  var currentWorldX(get, never) :Float;
-  var currentWorldY(get, never) :Float;
-  // tile placement
-  var placeableTileTypes :Array<Int>;
-  var currentTileType(get, set) :Int;
-  var currentTileTypeIndex(get, set) :Int;
   // movement input helpers
   var mouseDragStart :Point;
   var cameraDragStart :Point;
@@ -53,7 +49,13 @@ class BaseScene extends Scene
   var renderBounds :Bool = false;
   var renderCollisions :Bool = false;
   var resolveCollisions (get, never) :Bool;
-  
+  // current mouse position in the world
+  var currentWorldX(get, never) :Float;
+  var currentWorldY(get, never) :Float;
+  // tile placement
+  var currentTileType(get, set) :Int;
+  var currentTileTypeIndex(get, set) :Int;
+  var drawSize (get, set) :Int;
 
 
   public function new() 
@@ -64,10 +66,12 @@ class BaseScene extends Scene
     TYPES.init();
 
     camera = new Camera();
-    placeableTileTypes = [TYPES.NONE, TYPES.DIRT, TYPES.STONE, TYPES.CLAY];
+    placeableTileTypes = [TYPES.NONE, TYPES.DIRT, TYPES.STONE, TYPES.CLAY, TYPES.PUTTY];
     mouseDragStart = new Point();
     cameraDragStart = new Point();
     draggingRect = new Rectangle();
+    _drawRect = new Rectangle();
+    drawSize = 1;
   }
 
 
@@ -77,19 +81,12 @@ class BaseScene extends Scene
 
     world = new World(this);
     player = new Player(this);
-    init_textFields();
     init_currentTile();
 
     _sprite.addChild(world.image);
     _sprite.addChild(player.image);
-
     _sprite.addChild(currentTile);
     _sprite.addChild(outline);
-
-    // _sprite.addChild(fps);
-    // _sprite.addChild(mem);
-    // _sprite.addChild(debugText);
-    // _sprite.addChild(collisionText);
 
     reset_camera();
   }
@@ -98,19 +95,14 @@ class BaseScene extends Scene
   override public function update()
   {
     Game.ruler.startMarker('update', 0xff0000);
-    // reset the text
-    // debugText.text = '';
-    // collisionText.text = '';
-    // get the current user input
+
     handleInput();
 
     world.update();
     player.update();
 
     if (resolveCollisions)
-    {
       update_collisions();
-    }
     
     Game.ruler.endMarker('update');
   }
@@ -162,6 +154,8 @@ class BaseScene extends Scene
 
     input_currentTile();
 
+    input_adjustDrawSize();
+
     input_player();      
   }
 
@@ -188,6 +182,12 @@ class BaseScene extends Scene
     draggingRect.width = 240;
     draggingRect.height = 20;
     placeTile_rect(draggingRect, TYPES.DIRT);
+
+    draggingRect.x = player.x - 120;
+    draggingRect.y = player.y - 120;
+    draggingRect.width = 240;
+    draggingRect.height = 120;
+    placeTile_rect(draggingRect, TYPES.NONE);
   }
 
   inline function setScale( value :Float ) :Void
@@ -209,11 +209,11 @@ class BaseScene extends Scene
   {
     var l = rect.left;
     var t = rect.top;
-    while( l < rect.right )
+    while( l <= rect.right )
     {
-      while ( t < rect.bottom )
+      while ( t <= rect.bottom )
       {
-        placeTile( l, t, currentTileType, layer );
+        placeTile( l, t, type, layer );
         t += CONST.TILE_HEIGHT;
       }
       t = rect.top;
@@ -248,32 +248,6 @@ class BaseScene extends Scene
   }
 
 
-  inline function init_textFields() :Void
-  {
-    // TODO: move this stuff to the engine itself
-    // create a debug text area that can be toggled with the ~ key
-    
-    // fps = new FPS( Game.root.stage.stageWidth - 150, 0, 0x333333 );
-    // fps.autoSize = TextFieldAutoSize.RIGHT;
-    // fps.defaultTextFormat = new TextFormat('Arial', 32);
-
-    // mem = new MemUsage( Game.root.stage.stageWidth - 300, 0, 0x333333 );
-    // mem.autoSize = TextFieldAutoSize.RIGHT;
-    // mem.defaultTextFormat = new TextFormat('Arial', 32);
-    
-    // debugText = new TextField();    
-    // debugText.autoSize = TextFieldAutoSize.LEFT;
-    // debugText.selectable = false;
-    // debugText.defaultTextFormat = new TextFormat('Arial', 32);
-    
-    // collisionText = new TextField();
-    // collisionText.y = Game.root.stage.stageHeight - 160;
-    // collisionText.autoSize = TextFieldAutoSize.LEFT;
-    // collisionText.selectable = false;
-    // collisionText.defaultTextFormat = new TextFormat('Arial', 32);
-  }
-
-
   inline function init_currentTile() :Void
   {
     var bitmapData = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, true, 0xffffff);
@@ -288,13 +262,17 @@ class BaseScene extends Scene
 
   inline function update_collisions() :Void
   {
+    tries = 0;
     collisions = world.collisionCheck(player.bounds, collisions);
-    while (collisions.length > 0)
+    while (collisions.length > 0 && tries < MAX_COLLISIONS)
     {
       smallest = Collision.getSmallest(collisions).smallest();
       player.resolveCollision(smallest.px, smallest.py);
       collisions = world.collisionCheck(player.bounds, collisions);
+      tries++;
     }
+    if (tries == MAX_COLLISIONS) throw new openfl.errors.Error('Can\'t resolve the player collisions');
+
     if (player.velocityY == 0) player.canJump = true;
   }
 
@@ -309,16 +287,44 @@ class BaseScene extends Scene
     g.clear();
     g.lineStyle(3, 0xff69b4);
 
+
     if (rectDragging)
     {
-      var rx = (draggingRect.x - camera.x) * camera.scaleX;
-      var ry = (draggingRect.y - camera.y) * camera.scaleY;
+      var tlTile :Tile;
+      var brTile :Tile;
+      var left :Float;
+      var top :Float;
+      var right :Float;
+      var bottom :Float;
 
-      g.drawRect(rx, ry, draggingRect.width * camera.scaleX, draggingRect.height * camera.scaleY);
+      tlTile = world.getTile(draggingRect.x, draggingRect.y);
+      brTile = world.getTile(draggingRect.x + draggingRect.width, draggingRect.y + draggingRect.height);
+
+      top = (tlTile.worldY - camera.y) * camera.scaleY;
+      left = (tlTile.worldX - camera.x) * camera.scaleX;
+      bottom = (brTile.worldY + CONST.TILE_HEIGHT - camera.y) * camera.scaleY;
+      right = (brTile.worldX + CONST.TILE_WIDTH - camera.x) * camera.scaleX;
+
+      g.drawRect(Math.min(left, right), Math.min(top, bottom), Math.abs(right - left), Math.abs(bottom - top));
     }
     else
-      g.drawRect(currentTile.x, currentTile.y, currentTile.width, currentTile.height);
+    {
+      var xx :Float;
+      var yy :Float;
+      _drawRect.x = currentWorldX + (_drawRect.width * -0.5);
+      _drawRect.y = currentWorldY + (_drawRect.height * -0.5);
+
+      _drawRectTiles = world.getTiles_rect(_drawRect.x, _drawRect.y, _drawRect.width, _drawRect.height, _drawRectTiles);
+      while( _drawRectTiles.length > 0 )
+      {
+        var tile = _drawRectTiles.pop();
+        xx = (tile.worldX - camera.x) * camera.scaleX;
+        yy = (tile.worldY - camera.y) * camera.scaleY;
+        g.drawRect(xx, yy, CONST.TILE_WIDTH * camera.scaleX, CONST.TILE_HEIGHT * camera.scaleY);
+      }
+    }
   }
+  var _drawRectTiles :Array<Tile>;
 
 
   inline function render_bounds() :Void
@@ -399,11 +405,12 @@ class BaseScene extends Scene
       if (tile.type == TYPES.NONE) continue;
       var tx = tile.worldX;
       var ty = tile.worldY;
-
       xx = (tx - camera.x) * camera.scaleX;
       yy = (ty - camera.y) * camera.scaleY;
 
       g.drawRect(xx, yy, tileWidth, tileHeight);
+      var col = world.getTileCollisionValue(tx, ty);
+
     }
 
     g.lineStyle(3, 0x0000ff);
@@ -421,8 +428,6 @@ class BaseScene extends Scene
     collisions = world.collisionCheck(player.bounds, collisions);
     if (collisions.length > 0)
     {
-      // collisionText.text = '${collisions.length}';
-
       smallest = Collision.getSmallest(collisions).smallest();
       if (smallest.px != 0 || smallest.py != 0)
       {
@@ -430,8 +435,7 @@ class BaseScene extends Scene
         yy = yy - (smallest.py * camera.scaleY);
         g.lineTo(xx, yy);  
       }
-
-      // collisionText.text += ' ${smallest.px}|${smallest.py}';
+      Game.debug.setLabel('c', '${smallest.px}|${smallest.py}');
     }
     
   }
@@ -443,9 +447,7 @@ class BaseScene extends Scene
 
   inline function input_showDebugText() :Void
   {
-    var input = Game.inputManager;
-
-    if (input.keyboard.isDown(Keyboard.BACKQUOTE))
+    if (Game.debug.visible)
     {
       var xx = Math.floor(currentWorldX);
       var yy = Math.floor(currentWorldY);
@@ -465,7 +467,7 @@ class BaseScene extends Scene
       var tileCollision = world.getTileCollisionValue(xx, yy);
       text += '_col$tileCollision';
 
-      // debugText.text = text;
+      Game.debug.setLabel('o', text);
     }
   }
 
@@ -585,7 +587,11 @@ class BaseScene extends Scene
     if (input.mouse.isDown() && !mouseDragging)
     {
       if (input.keyboard.isDown(Keyboard.ALTERNATE)) layer = LAYERS.BACKGROUND;
-      placeTile(currentWorldX, currentWorldY, currentTileType, layer);
+
+      _drawRect.x = currentWorldX + (_drawRect.width * -0.5);
+      _drawRect.y = currentWorldY + (_drawRect.height * -0.5);
+
+      placeTile_rect(_drawRect, currentTileType, layer);
     }
   }
 
@@ -653,6 +659,19 @@ class BaseScene extends Scene
     currentTile.y = (coord.y - camera.y) * camera.scaleY;
   }
 
+  inline function input_adjustDrawSize() :Void
+  {
+    var input = Game.inputManager;
+
+    if (input.keyboard.isPressed(Keyboard.LEFTBRACKET))
+    {
+      drawSize--;
+    }
+    if (input.keyboard.isPressed(Keyboard.RIGHTBRACKET))
+    {
+      drawSize++;
+    }
+  }
 
   inline function input_player() :Void
   {
@@ -715,6 +734,8 @@ class BaseScene extends Scene
   var _currentTileTypeIndex :Int;
   var _currentTileType :Int;
   var _tiles :Array<Tile>;
+  var _drawSize :Int;
+  var _drawRect :Rectangle;
   var smallest :Collision;
   var collisions :Array<Collision>;
 
@@ -736,6 +757,17 @@ class BaseScene extends Scene
     _currentTileType = placeableTileTypes[_currentTileTypeIndex];
     TYPES.setBitmapToTileType(currentTile.bitmapData, _currentTileType);
     return _currentTileTypeIndex;
+  }
+
+  inline function get_drawSize() :Int return _drawSize;
+  inline function set_drawSize( value :Int ) :Int
+  {
+    if (value > MAX_DRAW_SIZE) value = MIN_DRAW_SIZE;
+    if (value < MIN_DRAW_SIZE) value = MAX_DRAW_SIZE;
+    _drawSize = value;
+    _drawRect.width = CONST.TILE_WIDTH * (value - 1) + 1;
+    _drawRect.height = CONST.TILE_HEIGHT * (value - 1) + 1;
+    return _drawSize;
   }
 
   inline function get_currentWorldX() :Float return (Game.inputManager.mouse.mouseX / camera.scaleX) + camera.x;

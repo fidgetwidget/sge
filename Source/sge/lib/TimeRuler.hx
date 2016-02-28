@@ -64,9 +64,9 @@ class TimeRuler extends Shape
     
     sampleMarkers();
     samples++;
-    if (samples > 3)
+    if (samples >= 30)
     {
-      delta *= (1/3);
+      // delta *= (1/3);
       drawMarkers();
       samples = 0;
       delta = 0;
@@ -77,13 +77,22 @@ class TimeRuler extends Shape
   inline function get_now() :Float
   {
 #if (sys)
-    return Sys.cpuTime();
+    
+    return haxe.Timer.stamp() / 1000;
+    // return Sys.cpuTime() / 1000;
+
 #elseif (flash || nme || openfl)
+
     return flash.Lib.getTimer() / 1000;
+
 #elseif lime
+
     return lime.system.System.getTimer() / 1000;
+
 #else
-    return haxe.Timer.stamp();
+    
+    return haxe.Timer.stamp() / 1000;
+
 #end
   }
 
@@ -168,16 +177,22 @@ class TimeRuler extends Shape
 
   function drawMarkers() :Void
   {
-    l = 0;
-    w = 0;
     n = max_width / frameSpan;
+    l = 0;
+    w = delta * n;
+
+    // trace('delta:$delta frameSpan:$frameSpan : ${(delta / frameSpan) * max_width} | ${w}');
+
+    g.beginFill(0x00ff00);
+    g.drawRect(position.x, position.y, w, 3);
+    g.endFill();
     
     for(m in markers)
     {
       g.beginFill(m.color);
 
-      l = (m.offset > ALMOST_ZERO ? m.offset : ALMOST_ZERO) * n;
-      w = Math.max( (m.avg > ALMOST_ZERO ? m.avg : m.max > ALMOST_ZERO ? m.max : ALMOST_ZERO) * n, 1);
+      l = m.offset * n;
+      w = Math.max( m.avg * n, 1);
 
       g.drawRect(position.x + l, position.y, w, BAR_HEIGHT);
 
