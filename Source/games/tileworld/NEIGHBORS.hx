@@ -28,13 +28,17 @@ class NEIGHBORS {
   }
 
   // TODO: find a bitwise way of doing this...
-  
+  // 1 >> 2, 2 >> 4, 4 >> 8...
+  // 2 << 1, 4 << 2, 8 << 4...
+  // there has to be a way to wrap it, 
+  // and shift it by 2 to get the value I want...
   static function flip(value :Int) :Int
   {
-    if (value == 1) return 4;
-    if (value == 2) return 8;
-    if (value == 4) return 1;
-    if (value == 8) return 2;
+    if (value == 0) return 0;
+    if (value == 1) return 4; // NORTH -> SOUTH
+    if (value == 2) return 8; // EAST  -> WEST
+    if (value == 4) return 1; // SOUTH -> NORTH
+    if (value == 8) return 2; // WEST  -> EAST
     return 0;
   }
 

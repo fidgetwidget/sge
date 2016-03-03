@@ -10,6 +10,7 @@ typedef ImportFrames = {
 
 }
 
+
 typedef ImportFrame = {
 
   var name :String;
@@ -21,7 +22,6 @@ typedef ImportFrame = {
   var cy :Int;
 
 }
-
 
 
 class Spritesheet {

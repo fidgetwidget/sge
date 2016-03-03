@@ -105,6 +105,7 @@ class Tile {
 
   inline function get_modifier() :UInt return _modifier;
 
+
   inline function get_neighbors() :Int return _neighbors;
 
   inline function set_neighbors( value :Int ) :Int 

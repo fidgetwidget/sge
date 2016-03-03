@@ -13,8 +13,8 @@ package sge.geom;
 class Coord 
 {
 
-  var x :Int;
-  var y :Int;
+  public var x :Int;
+  public var y :Int;
 
   public function new( x :Int = 0, y :Int = 0 )
   {
@@ -22,7 +22,11 @@ class Coord
     this.y = y;
   }
 
-  inline public function hashCode() :Int return Coord.getHashInt(x, y);
+  inline public function hashCode() :Int 
+  {
+    // trace('$x|$y:${Coord.getHashInt(x, y)}'); 
+    return Coord.getHashInt(x, y);
+  }
 
   inline public function hashString() :String return Coord.getHashString(x, y);
 

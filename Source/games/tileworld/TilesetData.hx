@@ -21,6 +21,10 @@ class TilesetData {
   var variants :Map< String, Array<TileFrameData> >;
   var sideFrames :Array<TileFrameData>;
 
+  var backgroundFrames :Array<TileFrameData>;
+  var backgroundVariants :Map< String, Array<TileFrameData> >;
+  var backgroundSides :Array<TileFrameData>;
+
   function new( name :String, id :UInt, filename :String, rgb :String ) 
   {
     this.name = name;

@@ -1,5 +1,7 @@
 package sge.geom;
 
+import haxe.ds.HashMap;
+
 // 
 // Helper for storing and retrieving objects with Coordinate values.
 // 
@@ -39,8 +41,10 @@ class CoordMap<T>
   }
 
 
+  public function iterator() : Iterator<T> return _hashMap.iterator();
 
-  private function getCoord( x :Int, y :Int ) :Coord
+
+  inline function getCoord( x :Int, y :Int ) :Coord
   {
     var coord;
     if (_coordCache.length > 0)
@@ -57,8 +61,8 @@ class CoordMap<T>
   }
 
 
-  private var _hashMap :HashMap<Coord, T>;
-  private var _coordCache :Array<Coord>;
+  var _hashMap :HashMap<Coord, T>;
+  var _coordCache :Array<Coord>;
 
 
 }

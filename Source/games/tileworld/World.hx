@@ -8,13 +8,10 @@ import openfl.display.Sprite;
 import openfl.display.PixelSnapping;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
-
 import sge.Game;
 import sge.Lib;
 import sge.collision.AABB;
 import sge.collision.Collision;
-import sge.geom.base.Coord as BaseCoord;
-import sge.geom.base.Rectangle as BaseRectangle;
 import sge.input.InputManager;
 import sge.scene.Camera;
 import sge.scene.Scene;
@@ -22,8 +19,8 @@ import sge.scene.Scene;
 
 class World {
 
+  public var background :Bitmap;
   public var image :Sprite;
-  // public var bitmap :Bitmap;
 
   var scene :Scene;
   var camera :Camera;
@@ -44,6 +41,8 @@ class World {
     this.scene = scene;
     this.camera = scene.camera;
 
+    var backgroundData = Assets.getBitmapData('images/tempBg.png');
+    background = new Bitmap(backgroundData, PixelSnapping.ALWAYS, false);
     image = new Sprite();
     // bitmap = new Bitmap(camera.bounds.width, camera.bounds.height, false, 0);
     regions = new Map();
@@ -53,7 +52,7 @@ class World {
     rect = new Rectangle(0, 0, CONST.REGION_WIDTH, CONST.REGION_HEIGHT);
     zero = new Point();
 
-    init_regions();
+    generateWorld();
   }
 
 
@@ -91,138 +90,18 @@ class World {
   }
 
 
-  public function collisionCheck( aabb :AABB, collisions :Array<Collision> ) :Array<Collision>
-  {
-    if (collisions == null) collisions = new Array();
-
-    var xx :Float = aabb.left;
-    var yy :Float = aabb.top;
-    var tile :Tile = null;
-    var collision :Collision;
-
-    while (xx <= aabb.right)
-    {
-      while (yy <= aabb.bottom)
-      {
-        tile = getTile(xx, yy);
-        collision = collision_tile(aabb, tile);
-        if (collision != null)
-        {
-          collisions.push(collision);
-        }
-
-        yy += Math.min( CONST.TILE_HEIGHT, aabb.halfHeight );
-      }
-      yy = aabb.top;
-      xx += Math.min( CONST.TILE_WIDTH, aabb.halfWidth );
-    }
-    return collisions;
-  }
-
   // 
-  // Collision_tile
-
-  public function collision_tile( aabb :AABB, tile :Tile ) :Collision
+  // Tile Getters
+  // 
+  
+  // Tiles
+  public function getTile( x :Float, y :Float, layer :UInt = 0 ) :Tile
   {
-    if (tile.type == TYPES.NONE) return null; // need to figure out why this happens...
-    var dir = getTileCollisionValue(tile.worldX, tile.worldY);
-    if (dir == NEIGHBORS.NONE) return null;
-
-
-    var tileHalfWidth = (CONST.TILE_WIDTH * 0.5);
-    var tileCenterX = tile.worldX + tileHalfWidth;    
-    var dx = tileCenterX - aabb.centerX;
-    var px = (aabb.halfWidth + tileHalfWidth) - Math.abs(dx);
-
-    if (px <= 0) return null;
-
-    var tileHalfHeight = (CONST.TILE_HEIGHT * 0.5);
-    var tileCenterY = tile.worldY + tileHalfHeight;
-    var dy = tileCenterY - aabb.centerY;
-    var py = (aabb.halfHeight + tileHalfHeight) - Math.abs(dy);
-
-    if (py <= 0) return null;
-
-    px *= dx > 0 ? 1 : -1;
-    py *= dy > 0 ? 1 : -1;
-
-    if (dir & NEIGHBORS.SIDES == NEIGHBORS.SIDES)
-    {
-      // Do nothing because we have all 4 directions
-    }
-    else
-    {
-      if (dir & NEIGHBORS.VERTICAL != 0)
-      {
-        // up & down are fine as is, lets check for left or right
-        if (dir & NEIGHBORS.WEST != 0)
-        {
-          while (px < 0) px += CONST.TILE_WIDTH;
-        } 
-        else if (dir & NEIGHBORS.EAST != 0) 
-        {
-          while (px > 0) px -= CONST.TILE_WIDTH;
-        }
-        else
-        {
-          px = 0;
-        }
-      }
-      else if (dir & NEIGHBORS.HORIZONTAL != 0)
-      {
-        // left & right are fine as is, lets check for up or down
-        if (dir & NEIGHBORS.NORTH != 0)
-        {
-          while (py < 0) py += CONST.TILE_HEIGHT;
-        }
-        else if (dir & NEIGHBORS.SOUTH != 0)
-        {
-          while (py > 0) py -= CONST.TILE_HEIGHT;
-        }
-        else
-        {
-           py = 0;
-        }
-      }
-      else
-      {
-        // no sides are safe, test them all
-        
-        if (dir & NEIGHBORS.WEST != 0)
-        {
-          while (px < 0) px += CONST.TILE_WIDTH;
-        } 
-        else if (dir & NEIGHBORS.EAST != 0) 
-        {
-          while (px > 0) px -= CONST.TILE_WIDTH;
-        }
-        else
-        {
-          px = 0;
-        }
-
-        if (dir & NEIGHBORS.NORTH != 0)
-        {
-          while (py < 0) py += CONST.TILE_HEIGHT;
-        }
-        else if (dir & NEIGHBORS.SOUTH != 0)
-        {
-          while (py > 0) py -= CONST.TILE_HEIGHT;
-        }
-        else
-        {
-           py = 0;
-        }
-      }
-      
-    }
-
-    if (px == 0 && py == 0) return null;
-
-    return new Collision(px, py);
+    var region = getRegion(x, y);
+    return region.getTile(x, y, layer);
   }
 
-  public function getTiles_rect( x :Float, y :Float, width :Float, height :Float, results :Array<Tile> ) :Array<Tile>
+  public function getTiles( x :Float, y :Float, width :Float, height :Float, results :Array<Tile> ) :Array<Tile>
   {
     if (results == null) results = new Array();
 
@@ -248,26 +127,43 @@ class World {
     return results;
   }
 
-
   public function getTiles_bounds( aabb :AABB, results :Array<Tile> ) :Array<Tile>
   {
-    return getTiles_rect(aabb.left, aabb.top, aabb.width, aabb.height, results);
+    return getTiles(aabb.left, aabb.top, aabb.width, aabb.height, results);
   }
 
-  // 
-  // Accessors
-  // 
-
-  
-  // Tiles
-
-  public function getTile( x :Float, y :Float, layer :UInt = 0 ) :Tile
+  // Chunk
+  public function getChunk( x :Float, y :Float ) :Chunk
   {
-    var region = getRegion(x, y);
-    return region.getTile(x, y, layer);
+    return getRegion(x, y).getChunk(x, y);
   }
 
+  // Regions
+  public inline function getRegion( x :Float, y :Float, createIfNull :Bool = true ) :Region
+  {
+    var rx = Math.floor( x / CONST.REGION_WIDTH );
+    var ry = Math.floor( y / CONST.REGION_HEIGHT );
 
+    return getRegion_local(rx, ry, createIfNull);
+  }
+
+  public function getRegions() :Map<String, Region> return regions;
+
+  public inline function getRegionKey( x :Float, y :Float ) :String
+  {
+    var rx = Math.floor( x / CONST.REGION_WIDTH );
+    var ry = Math.floor( y / CONST.REGION_HEIGHT );
+
+    return regionString(rx, ry);
+  } 
+
+  // 
+  // SETTERS
+  // 
+
+  // 
+  // Set tile by type
+  // 
   public function setTileType( x :Float, y :Float, tileType :Int, layer :UInt = 0 ) :Void
   {
     var region = getRegion(x, y);
@@ -275,7 +171,7 @@ class World {
   }
 
   // 
-  // 
+  // Set tile as dirty (to be updated)
   // 
   public function touchTile( x :Float, y :Float ) :Void
   {
@@ -286,70 +182,31 @@ class World {
     chunk.tileChanged(tile);
   }
 
-
-  public function getTileCoord( x :Float, y :Float ) :BaseCoord
-  {
-    var tx = Math.floor(x - Lib.remainder_int(Math.floor(x), CONST.TILE_WIDTH));
-    var ty = Math.floor(y - Lib.remainder_int(Math.floor(y), CONST.TILE_WIDTH));
-    return { x: tx, y: ty };
-  }
-
-  // Chunk
-
-  public function getChunk( x :Float, y :Float ) :Chunk
-  {
-    return getRegion(x, y).getChunk(x, y);
-  }
-
-  public function getTileCollisionValue( x :Float, y :Float ) :Int
-  {
-    return getRegion(x, y).getChunk(x, y).getCollision(x, y);
-  }
-
-  // Regions
   
-  public function getRegions() :Map<String, Region> return regions;
-
-  public inline function getRegion( x :Float, y :Float, createIfNull :Bool = true ) :Region
-  {
-    var rx = Math.floor( x / CONST.REGION_WIDTH );
-    var ry = Math.floor( y / CONST.REGION_HEIGHT );
-
-    return getRegion_local(rx, ry, createIfNull);
-  }
-
-  public inline function getRegionKey( x :Float, y :Float ) :String
-  {
-    var rx = Math.floor( x / CONST.REGION_WIDTH );
-    var ry = Math.floor( y / CONST.REGION_HEIGHT );
-
-    return regionString(rx, ry);
-  } 
-
-
+  // 
+  // Helpers
+  // 
   
+  public inline function snapToTileX( x :Float ) :Int return Math.floor(x - Lib.remainder_int(Math.floor(x), CONST.TILE_WIDTH));
 
-  
+  public inline function snapToTileY( y :Float ) :Int return Math.floor(y - Lib.remainder_int(Math.floor(y), CONST.TILE_HEIGHT));
 
 
   // 
   // Internal Helpers
   // 
 
+  
   // 
-  // TODO: move these to a new WorldGen class
-  //  init_regions, getNewRegion, createRegion
-
-  inline function init_regions() :Void
+  // TODO: Move these to a WorldGenerator class
+  inline function generateWorld() :Void
   {
     createRegion(0, 0);
   }
 
-  inline function getNewRegion() : Region  return new Region();
-
   inline function createRegion( rx :Int, ry :Int ) :Region
   {
-    var region = getNewRegion();
+    var region = RegionPool.instance.get();
 
     var regionKey = regionString(rx, ry);
     var xx = rx * CONST.REGION_WIDTH;
@@ -384,7 +241,8 @@ class World {
     return region;
   }
 
-  inline function regionString( regionXIndex :Int, regionYIndex :Int ) :String return '$regionXIndex|$regionYIndex';
+
+  inline function regionString( rx :Int, ry :Int ) :String return '$rx|$ry';
 
 
   // 

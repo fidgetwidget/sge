@@ -16,6 +16,10 @@ class TYPES {
 
   public static var tilesets :Map< String, TilesetData >;
   public static var tileFrames :Map< String, BitmapData >;
+
+  public static var tileTypeIds (get, never) :Iterator< UInt >;
+  public static var tileTypeNames (get, never) :Iterator< String >;
+
   static var variantCounts :Map< String, Int >;
   static var rgbIdMap :Map< Int, UInt >;
   static var nameIdMap :Map< String, UInt >;
@@ -97,6 +101,35 @@ class TYPES {
           }
         }
       }
+
+      if (value.backgroundFrames != null)
+      {
+        for (bitwiseKey in 0...value.backgroundFrames.length)
+        {
+          tileKey = '${key}:${bitwiseKey}_bg';
+          tileFrame = value.backgroundFrames[bitwiseKey];
+          bitmapData = tileFrame.bitmapData;
+          TYPES.tileFrames.set(tileKey, bitmapData);
+        }
+      }
+
+      if (value.backgroundVariants != null)
+      {
+        for (variantKey in value.backgroundVariants.keys())
+        {
+          var frames = value.backgroundVariants.get(variantKey);
+          tileKey = '${key}:${variantKey}_bg'; 
+          variantCounts.set(tileKey, frames.length);
+
+          for (vi in 0...frames.length)
+          {
+            varTileKey = '${tileKey}_${vi}_bg';
+            tileFrame = frames[vi];
+            bitmapData = tileFrame.bitmapData;
+            TYPES.tileFrames.set(varTileKey, bitmapData);
+          }
+        }
+      }
       
       TYPES.nameIdMap.set(value.name, key);
       TYPES.rgbIdMap.set(value.rgb, key);
@@ -118,7 +151,7 @@ class TYPES {
   {
     if (TYPES.tileFrames == null) throw new Error("tileFrames is null");
 
-    tileKey = TYPES.getTileKey(tileType, modifier, neighbors);
+    tileKey = TYPES.getTileKey(tileType, modifier, neighbors, layer);
     tileBitmapData = TYPES.tileFrames.get(tileKey);
     bitmapData.copyPixels( tileBitmapData, TYPES.rect, TYPES.zero );
   }
@@ -140,6 +173,7 @@ class TYPES {
     }
   }
 
+  public static inline function getBitmapData( key :String ) :BitmapData return tileFrames.exists(key) ? tileFrames.get(key) : null;
 
   public static inline function getIdFromeName( name :String ) :UInt return nameIdMap.get(name);
 
@@ -148,14 +182,23 @@ class TYPES {
 
   public static inline function getTileKey( tileType :UInt, modifier :Int, neighbors :UInt, layer :UInt = LAYERS.BASE, noVariants :Bool = false ) :String
   {
-    tileKey = '$tileType:$neighbors';
-    // if (layer == LAYERS.BACKGROUND) tileKey += '_bg';
+    // None gets the None Tile
+    if (tileType == TYPES.NONE) return '${tileType}';
 
+    tileKey = layer == LAYERS.BACKGROUND ? '${tileType}:${neighbors}_bg' : '$tileType:$neighbors';
+    // check if its just the bg that's missing
+    if (!TYPES.tileFrames.exists(tileKey) && layer == LAYERS.BACKGROUND) 
+    {
+      trace('background asset not found for ${tileType}:${neighbors}');
+      tileKey = '$tileType:$neighbors';
+    }
+    // check to see if it's a no neighbor tile
     if (!TYPES.tileFrames.exists(tileKey)) 
     {
       tileKey = '$tileType';
-      // if (layer == LAYERS.BACKGROUND) tileKey += '_bg';
+      if (layer == LAYERS.BACKGROUND && TYPES.tileFrames.exists(tileKey + '_bg')) tileKey += '_bg';
     }
+    // otherwise we just don't have the tile asset
     if (!TYPES.tileFrames.exists(tileKey)) throw new Error('tileFrames $tileKey not found.');
 
     if (variantCounts.exists(tileKey) && !noVariants)
@@ -164,7 +207,7 @@ class TYPES {
       rnd = Lib.random_int(0, count);
       if (rnd < count) tileKey += '_$rnd';
     }
-
+    
     return tileKey;
   }
 
@@ -194,7 +237,8 @@ class TYPES {
   static var count :Int;
   static var rnd :Int;
 
-
+  static inline function get_tileTypeIds() :Iterator<UInt> return nameIdMap.iterator();
+  static inline function get_tileTypeNames() :Iterator<String> return nameIdMap.keys();
 
 
 
@@ -242,7 +286,5 @@ class TYPES {
 
   public static var NICKLE :UInt = 112;
   public static var COBALT :UInt = 114;
-
-
 
 }

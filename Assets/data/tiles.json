@@ -20,7 +20,11 @@
       "name": "dirt",
       "id": 10,
       "filename": "dirt.png",
-      "key": "0x9e764c"
+      "key": "0x9e764c",
+      "bg" : {
+        "x": "0",
+        "y": "64"
+      }
     },
     {
       "name": "clay",

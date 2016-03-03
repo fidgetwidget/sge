@@ -11,6 +11,7 @@ import samples.brickBreaker.BrickBreaker;
 import samples.blockDrop.BlockDrop;
 import samples.snake.Snake;
 import games.tileworld.BaseScene;
+import games.tileworld.DebugRenderTiles;
 
 
 class Main extends Sprite {

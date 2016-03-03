@@ -18,7 +18,9 @@ typedef TileObjectData = {
   // collision rectangles
   // the x and y are offset from the center_tile_x/y position
   var emptyReq :Rectangle; // don't collide with this
+  var emptyReqTiles :Array<Int>;
   var collisionReq :Rectangle; // do collide with this
+  var collisionReqTiles :Array<Int>;
 
   // [x, y, dir, x, y, dir...] offset values & collision direction values to set when placed
   // the x & y are offset from the center_tile_x/y position
@@ -26,7 +28,10 @@ typedef TileObjectData = {
   
   // image info
   var filename :String;
-  var source :BitmapData;
+  var image_rect :Rectangle;
+  var image_rect_bg :Rectangle;
+  var image_rect_fg :Rectangle;
+
   var tiles_wide :Int;
   var tiles_high :Int;
   // how the image breaks down to individual tiles

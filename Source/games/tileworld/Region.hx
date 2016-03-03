@@ -7,7 +7,7 @@ import openfl.errors.Error;
 import openfl.errors.RangeError;
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
-
+import sge.geom.CoordMap;
 
 // 
 // TODO: Move the draw region bounds
@@ -25,18 +25,27 @@ class Region {
   public var dirty (get, never) :Bool;
 
   public var world (default, null) :World;
-  public var chunks (default, null) :Array<Chunk>;
+  public var chunks (default, null) :CoordMap<Chunk>;
+
   var changedChunks :Array<Chunk>;
+  var tileObjects :Array<TileObject>;
+
   var mapData :BitmapData;
   var mapDirty :Bool;
   
 
   public function new() 
   { 
-    chunks = new Array();
+    chunks = new CoordMap();
     changedChunks = new Array();
+    tileObjects = new Array();
+
     _chunkRect = new Rectangle(0, 0, CONST.CHUNK_WIDTH, CONST.CHUNK_HEIGHT);
     _chunkTarget = new Point();
+    _tObjRect = new Rectangle();
+    _tObjTarget = new Point();
+    _chunkMapRect = new Rectangle(0, 0, CONST.CHUNK_TILES_WIDE, CONST.CHUNK_TILES_HIGH);
+    _chunkMapTarget = new Point();
   }
 
 
@@ -50,6 +59,14 @@ class Region {
   }
 
 
+
+  public function addTileObject( tileObject :TileObject ) :Void
+  {
+    tileObjects.push(tileObject);
+  }
+
+  // Not In Use
+  // 
   // public inline function setTile( x :Float, y :Float, tile :Tile ) :Void
   // {
   //   var chunk = getChunk(x, y);
@@ -68,33 +85,42 @@ class Region {
 
   public inline function getTile( x :Float, y :Float, layer :UInt = LAYERS.BASE ) :Tile
   {
-    index = worldPosition_chunkIndex(x, y);
-    chunk = chunks[index];
+    // index = worldPosition_chunkIndex(x, y);
+    // chunk = chunks[index];
+    
+    ix = Math.floor( (x - this.x) / CONST.CHUNK_WIDTH );
+    iy = Math.floor( (y - this.y) / CONST.CHUNK_HEIGHT );
+
+    chunk = chunks.getAt(ix, iy);
+
     return chunk.getTile(x, y, layer);
   }
-
-
-  public inline function getChunk( x:Float, y :Float ) :Chunk
-  {
-    index = worldPosition_chunkIndex(x, y);
-    return chunks[index];
-  }
-
-  // This isn't really a thing, they are indexed in a 1D array 
-  // because we don't need to support negative indexes
-  public inline function getChunkKey( x:Float, y :Float ) :String
-  {
-    chunkX = Math.floor((x - this.x) / CONST.CHUNK_WIDTH);
-    chunkY = Math.floor((y - this.y) / CONST.CHUNK_HEIGHT);
-    return '$chunkX|$chunkY';
-  }
-
 
   public inline function getTileType( x :Float, y :Float ) :Int
   {
     return getTile(x, y).type;
   }
 
+
+  public inline function getChunk( x:Float, y :Float ) :Chunk
+  {
+    // index = worldPosition_chunkIndex(x, y);
+
+    ix = Math.floor( (x - this.x) / CONST.CHUNK_WIDTH );
+    iy = Math.floor( (y - this.y) / CONST.CHUNK_HEIGHT );
+
+    return chunks.getAt(ix, iy);
+    // return chunks[index];
+  }
+
+  // This isn't really a thing, they are indexed in a 1D array 
+  // because we don't need to support negative indexes
+  public inline function getChunkKey( x:Float, y :Float ) :String
+  {
+    ix = Math.floor((x - this.x) / CONST.CHUNK_WIDTH);
+    iy = Math.floor((y - this.y) / CONST.CHUNK_HEIGHT);
+    return '$ix|$iy';
+  }
 
   public inline function chunkChanged( chunk :Chunk ) :Void
   {
@@ -120,12 +146,13 @@ class Region {
     {
       for (cxi in 0...CONST.REGION_CHUNKS_WIDE)
       {
-        chunk = getNewChunk();
+        chunk = ChunkPool.instance.get();
         xx = cxi * CONST.CHUNK_WIDTH;
         yy = cyi * CONST.CHUNK_HEIGHT;
 
         chunk.set(this, xx, yy);
-        chunks.push(chunk);
+        chunks.setAt(cxi, cyi, chunk);
+        // chunks.push(chunk);
         chunkChanged(chunk);
       }
     }
@@ -135,12 +162,12 @@ class Region {
   inline function init_data() :Void 
   { 
     _cache = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, false );
+    _bg = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, false );
+    _fg = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, false );
+
     mapData = new BitmapData( CONST.REGION_TILES_WIDE, CONST.REGION_TILES_HIGH, false );
     mapDirty = true;
   }
-
-
-  inline function getNewChunk() : Chunk  return new Chunk(); // ChunkPool.getChunk();
 
 
   inline function getIndex( x :Int , y :Int ) :Int return (y * CONST.REGION_CHUNKS_WIDE) + x;
@@ -174,13 +201,20 @@ class Region {
       _cache.copyPixels(chunk.cache, _chunkRect, _chunkTarget);
       changeCount++;
     }
+
+    for (tObj in tileObjects)
+    {
+      _tObjRect.width = tObj.width;
+      _tObjRect.height = tObj.height;
+      _tObjRect.x = this.x - tObj.x;
+      _tObjRect.x = this.y - tObj.y;
+      _cache.copyPixels(tObj.image, _tObjRect, _tObjTarget);
+    }
   }
+
 
   inline function updateMap() :Void
   {
-    if (_chunkMapRect == null) _chunkMapRect = new Rectangle(0, 0, CONST.CHUNK_TILES_WIDE, CONST.CHUNK_TILES_HIGH);
-    if (_chunkMapTarget == null) _chunkMapTarget = new Point();
-
     for (cyi in 0...CONST.REGION_CHUNKS_HIGH)
     {
       for (cxi in 0...CONST.REGION_CHUNKS_WIDE)
@@ -196,29 +230,35 @@ class Region {
     }
   }
 
-  var MAX_CHANGE_COUNT = 4;
-  var _chunkRect :Rectangle;
-  var _chunkMapRect :Rectangle;
-  var _chunkTarget :Point;
-  var _chunkMapTarget :Point;
-  var _chunkMap :BitmapData;
-  var changeCount :Int;
-  var chunk :Chunk;
+  var ix :Int;
+  var iy :Int;
+  var xx :Int;
+  var yy :Int;
+  var cxi :Int;
+  var cyi :Int;
   var index :Int;
   var chunkX :Int;
   var chunkY :Int;
-  var cxi :Int;
-  var cyi :Int;
-  var xx :Int;
-  var yy :Int;
-  var ix :Int;
-  var iy :Int;
+  var chunk :Chunk;
+  var changeCount :Int;
+
+  var _tObjRect :Rectangle;
+  var _tObjTarget :Point;
+  var _chunkRect :Rectangle;
+  var _chunkTarget :Point;
+  var _chunkMapRect :Rectangle;
+  var _chunkMapTarget :Point;
+  var _chunkMap :BitmapData;
+
+  var MAX_CHANGE_COUNT = 4;
 
   // 
   // Properties
   // 
 
   var _cache :BitmapData;
+  var _bg :BitmapData;
+  var _fg :BitmapData;
 
   inline function get_dirty() :Bool return changedChunks.length > 0;
 

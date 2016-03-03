@@ -44,6 +44,14 @@ typedef ImportTileTypes = {
 
 }
 
+typedef ImportBackgroundData = {
+
+  var x :String;
+  var y :String;
+  var variants :Array<ImportTileTypeVariantData>;
+
+}
+
 // The tileset
 typedef ImportTilesetData = {
 
@@ -56,6 +64,7 @@ typedef ImportTilesetData = {
   var height :String;
   var key :String; // 0x000000 -> 0xffffff
   var variants :Array<ImportTileTypeVariantData>;
+  var bg :ImportBackgroundData;
   var noSides :Bool;
 
 }
@@ -147,6 +156,21 @@ class TilesetImporter {
 
       if (type.noSides != true)
         tilesetData.sideFrames = getSideFrames( x, y, width, height, columns );
+
+      if (type.bg != null)
+      {
+        var bgX = Reflect.hasField(type.bg, "x") ? Std.parseInt(type.bg.x) : 0;
+        var bgY = Reflect.hasField(type.bg, "y") ? Std.parseInt(type.bg.y) : 0;
+
+        trace('importing ${type.id} background $bgX|$bgY|$width|$height');
+
+        tilesetData.backgroundFrames = getTileFrames(x + bgX, y + bgY, width, height, columns, bitwiseMap);
+
+        if (type.bg.variants != null)
+          tilesetData.backgroundVariants = getTileFrameVariants( type.id, x + bgX, y + bgY, width, height, columns, type.bg.variants );
+      }
+      else
+        tilesetData.backgroundFrames = getTileFrames(x, y, width, height, columns, bitwiseMap);
 
       results.set(type.id, tilesetData);
     }
@@ -277,15 +301,12 @@ class TilesetImporter {
     var tileBitmap = new BitmapData(tile_width, tile_height, true, 0);
     tileBitmap.copyPixels( sourceImage, rect, zero );
 
-    var tileFrame :TileFrameData = {
-      x: x,
-      y: y,
+    // TileFrameData
+    variantFrames.push({
       width: tile_width,
       height: tile_height,
       bitmapData: tileBitmap
-    };
-
-    variantFrames.push(tileFrame);
+    });
   }
 
 
@@ -314,17 +335,16 @@ class TilesetImporter {
 
   inline function getTileFrame( x :Int, y :Int, tile_x :Int, tile_y :Int, tile_width :Int, tile_height :Int ) :TileFrameData
   {
-    rect.x = x = tile_x + (x * tile_width);
-    rect.y = y = tile_y + (y * tile_height);
+    rect.x = tile_x + (x * tile_width);
+    rect.y = tile_y + (y * tile_height);
     rect.width = tile_width;
     rect.height = tile_height;
 
     var tileBitmap = new BitmapData(tile_width, tile_height, true, 0);
     tileBitmap.copyPixels( sourceImage, rect, zero );
 
+    // TileFrameData
     return {
-      x: x,
-      y: y,
       width: tile_width,
       height: tile_height,
       bitmapData: tileBitmap
