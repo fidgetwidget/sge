@@ -1,0 +1,9 @@
+{
+  "id": 10,
+  "name": "dirt",
+  "filename": "dirt.png",
+  "bg" : {
+    "x": "0",
+    "y": "64"
+  }
+}

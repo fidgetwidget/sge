@@ -12,14 +12,12 @@ import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.text.TextFieldAutoSize;
 import openfl.ui.Keyboard;
-
 import sge.Game;
 import sge.Lib;
 import sge.lib.MemUsage;
 import sge.collision.Collision;
 import sge.scene.Camera;
 import sge.scene.Scene;
-
 
 class BaseScene extends Scene
 {
@@ -64,7 +62,7 @@ class BaseScene extends Scene
   { 
     super();
 
-    TYPES.init();
+    TileHelper.init();
     placeableTileTypes = [TYPES.NONE, TYPES.DIRT, TYPES.STONE, TYPES.CLAY, TYPES.PUTTY];
 
     tileData = Assets.getBitmapData("images/tiles.png");
@@ -756,7 +754,7 @@ class BaseScene extends Scene
 
 
   var _drawRectTiles :Array<Tile>;
-  
+
 
   // 
   // Properties
@@ -775,7 +773,7 @@ class BaseScene extends Scene
   {
     _currentTileTypeIndex = placeableTileTypes.indexOf(value);
     _currentTileType = value;
-    TYPES.setBitmapToTileType(currentTile.bitmapData, _currentTileType);
+    TileHelper.setBitmapToTileType(currentTile.bitmapData, _currentTileType);
     return value;
   }
 
@@ -786,7 +784,7 @@ class BaseScene extends Scene
     if (value > placeableTileTypes.length - 1) value = 0;
     _currentTileTypeIndex = value;
     _currentTileType = placeableTileTypes[_currentTileTypeIndex];
-    TYPES.setBitmapToTileType(currentTile.bitmapData, _currentTileType);
+    TileHelper.setBitmapToTileType(currentTile.bitmapData, _currentTileType);
     return _currentTileTypeIndex;
   }
 

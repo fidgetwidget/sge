@@ -1,8 +1,7 @@
 package sge.graphics;
 
-
 import openfl.geom.Point;
-import openfl.geom.Recangle;
+import openfl.geom.Rectangle;
 import sge.lib.Pool;
 
 
@@ -14,7 +13,7 @@ class FrameDataPool extends Pool<FrameData> {
 
   override function createNew() :FrameData
   {
-    return { name: "", bitmapData: null, rect: new Recangle(), origin: new Point() };
+    return { name: "", source: null, rect: new Rectangle(), origin: new Point(), bitmapData: null };
   }
 
 }

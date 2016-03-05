@@ -1,0 +1,12 @@
+{
+  "id": 20,
+  "name": "stone",
+  "filename": "stone.png",
+  "variants": [
+    {
+      "set": true,
+      "x": "0",
+      "y": "64"
+    }
+  ]
+}

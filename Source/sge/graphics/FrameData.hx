@@ -2,19 +2,20 @@ package sge.graphics;
 
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
-import openfl.graphics.BitmapData;
+import openfl.display.BitmapData;
 
 
-typedef FrameData {
+typedef FrameData = {
 
   var name :String;
 
-  var bitmapData :BitmapData;
+  var source :BitmapData;
 
   var rect :Rectangle;
 
-  // for sprites (where is the center of the frame)
   var origin :Point;
+
+  var bitmapData :BitmapData;
 
 }
 

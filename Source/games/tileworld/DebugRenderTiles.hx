@@ -12,13 +12,14 @@ import openfl.text.TextField;
 import openfl.text.TextFormat;
 import openfl.text.TextFieldAutoSize;
 import openfl.ui.Keyboard;
-
 import sge.Game;
 import sge.Lib;
 import sge.lib.MemUsage;
 import sge.collision.Collision;
 import sge.scene.Camera;
 import sge.scene.Scene;
+import sge.graphics.TileSets;
+import sge.graphics.TileSetImporter;
 
 
 class DebugRenderTiles extends Scene
@@ -44,7 +45,10 @@ class DebugRenderTiles extends Scene
   { 
     super();
 
-    TYPES.init();
+    var tilesets :TileSets = new TileSets();
+    TileSetImporter.importTileSets('import', tilesets);
+
+    TileHelper.init();
     camera = new Camera();
     mouseDragStart = new Point();
     cameraDragStart = new Point();
@@ -75,8 +79,8 @@ class DebugRenderTiles extends Scene
 
       for ( n in 0...NEIGHBORS.SIDES )
       {
-        var key = TYPES.getTileKey(id, 0, n, LAYERS.BASE);
-        var data = TYPES.getBitmapData(key);
+        var key = TileHelper.getTileKey(id, 0, n, LAYERS.BASE);
+        var data = TileHelper.getBitmapData(key);
         if (data == null) continue;
         var bitmap = new Bitmap(data, PixelSnapping.ALWAYS, false);
 
@@ -91,8 +95,8 @@ class DebugRenderTiles extends Scene
 
       for ( n in 0...NEIGHBORS.SIDES )
       {
-        var key = TYPES.getTileKey(id, 0, n, LAYERS.BACKGROUND);
-        var data = TYPES.getBitmapData(key);
+        var key = TileHelper.getTileKey(id, 0, n, LAYERS.BACKGROUND);
+        var data = TileHelper.getBitmapData(key);
         if (data == null) continue;
         var bitmap = new Bitmap(data, PixelSnapping.ALWAYS, false);
 

@@ -60,7 +60,7 @@ class Transform
 
   // Static Methods
 
-  public static function decomposeMatrix( matrix : Matrix ) :Transform
+  public static function decomposeMatrix( matrix : Matrix, transform :Transform = null ) :Transform
   {
     var px :Vector, py :Vector, rot :Float;
 
@@ -69,7 +69,7 @@ class Transform
 
     rot = ((180 / Math.PI) * Math.atan2(py.y, py.x));
 
-    var transform = new Transform();
+    if (transform == null) transform = new Transform();
 
     transform.scaleX = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b);
     transform.scaleY = Math.sqrt(matrix.c * matrix.c + matrix.d * matrix.d);
