@@ -251,85 +251,85 @@ class World {
   // TODO: move this to another class...
   // 
 
-  inline function loadRegionFromMap( regionXIndex :Int, regionYIndex :Int ) :Void
-  {
-    var region = getRegion(regionXIndex, regionYIndex);
+//   inline function loadRegionFromMap( regionXIndex :Int, regionYIndex :Int ) :Void
+//   {
+//     var region = getRegion(regionXIndex, regionYIndex);
 
-    var regionReadyHandler = function( imageData :BitmapData ) :Void
-    {
-      for (imageTileX in 0...CONST.REGION_TILES_WIDE)
-      {
-        for (imageTileY in 0...CONST.REGION_TILES_HIGH)
-        {
-          // using the pixel, determine the tile type
-          var pixel :UInt = imageData.getPixel(imageTileX, imageTileY);
-          var tileTypeValue :UInt = TYPES.getTypeFromRGB( pixel );
+//     var regionReadyHandler = function( imageData :BitmapData ) :Void
+//     {
+//       for (imageTileX in 0...CONST.REGION_TILES_WIDE)
+//       {
+//         for (imageTileY in 0...CONST.REGION_TILES_HIGH)
+//         {
+//           // using the pixel, determine the tile type
+//           var pixel :UInt = imageData.getPixel(imageTileX, imageTileY);
+//           var tileTypeValue :UInt = TYPES.getTypeFromRGB( pixel );
 
-          // convert to world position x/y
-          var tileXPos = 
-            (regionXIndex * CONST.REGION_TILES_WIDE) + 
-            (imageTileX * CONST.TILE_WIDTH) + 
-            (CONST.TILE_WIDTH * 0.5);
-          var tileYPos = 
-            (regionYIndex * CONST.REGION_TILES_HIGH) + 
-            (imageTileY * CONST.TILE_HEIGHT) + 
-            (CONST.TILE_HEIGHT * 0.5);
+//           // convert to world position x/y
+//           var tileXPos = 
+//             (regionXIndex * CONST.REGION_TILES_WIDE) + 
+//             (imageTileX * CONST.TILE_WIDTH) + 
+//             (CONST.TILE_WIDTH * 0.5);
+//           var tileYPos = 
+//             (regionYIndex * CONST.REGION_TILES_HIGH) + 
+//             (imageTileY * CONST.TILE_HEIGHT) + 
+//             (CONST.TILE_HEIGHT * 0.5);
 
-          // set the tile at that position to the correct tile type
-          region.setTileType(tileXPos, tileYPos, tileTypeValue);
-        }
-      }
+//           // set the tile at that position to the correct tile type
+//           region.setTileType(tileXPos, tileYPos, tileTypeValue);
+//         }
+//       }
 
-    }
-    var fileName = 'region_x${regionXIndex}_y${regionYIndex}.png';
-    var path = 'assets/regions/${fileName}';
+//     }
+//     var fileName = 'region_x${regionXIndex}_y${regionYIndex}.png';
+//     var path = 'assets/regions/${fileName}';
 
-    if (Assets.exists(path, AssetType.IMAGE))
-    {
-      Assets.loadBitmapData( path, true, regionReadyHandler );
-    }
-    else
-    {
-      createRegion( regionXIndex, regionYIndex );
-    }
-  }
+//     if (Assets.exists(path, AssetType.IMAGE))
+//     {
+//       Assets.loadBitmapData( path, true, regionReadyHandler );
+//     }
+//     else
+//     {
+//       createRegion( regionXIndex, regionYIndex );
+//     }
+//   }
 
 
-  inline function saveRegionMap( regionXIndex :Int, regionYIndex :Int ) :Void
-  {
-    var region = getRegion(regionXIndex, regionYIndex);
-    var imageData = new BitmapData(CONST.REGION_TILES_WIDE, CONST.REGION_TILES_HIGH, true, 0xffffff);
+//   inline function saveRegionMap( regionXIndex :Int, regionYIndex :Int ) :Void
+//   {
+//     var region = getRegion(regionXIndex, regionYIndex);
+//     var imageData = new BitmapData(CONST.REGION_TILES_WIDE, CONST.REGION_TILES_HIGH, true, 0xffffff);
 
-    imageData.lock();
-    for (imageTileX in 0...CONST.REGION_TILES_WIDE)
-    {
-      for (imageTileY in 0...CONST.REGION_TILES_HIGH)
-      {
-        var tileXPos = 
-          (regionXIndex * CONST.REGION_TILES_WIDE) + 
-          (imageTileX * CONST.TILE_WIDTH) + 
-          (CONST.TILE_WIDTH * 0.5);
-        var tileYPos = 
-          (regionYIndex * CONST.REGION_TILES_HIGH) + 
-          (imageTileY * CONST.TILE_HEIGHT) + 
-          (CONST.TILE_HEIGHT * 0.5);
+//     imageData.lock();
+//     for (imageTileX in 0...CONST.REGION_TILES_WIDE)
+//     {
+//       for (imageTileY in 0...CONST.REGION_TILES_HIGH)
+//       {
+//         var tileXPos = 
+//           (regionXIndex * CONST.REGION_TILES_WIDE) + 
+//           (imageTileX * CONST.TILE_WIDTH) + 
+//           (CONST.TILE_WIDTH * 0.5);
+//         var tileYPos = 
+//           (regionYIndex * CONST.REGION_TILES_HIGH) + 
+//           (imageTileY * CONST.TILE_HEIGHT) + 
+//           (CONST.TILE_HEIGHT * 0.5);
 
-        // set the tile at that position to the correct tile type
-        var tileType = region.getTileType(tileXPos, tileYPos);
-        var tileTypeColor = 0x000000;
-        imageData.setPixel(imageTileX, imageTileY, tileTypeColor);
-      }
-    }
-    var rect = new Rectangle(0, 0, CONST.REGION_TILES_WIDE, CONST.REGION_TILES_HIGH);
-    imageData.unlock(rect);
+//         // set the tile at that position to the correct tile type
+//         var tileType = region.getTileType(tileXPos, tileYPos);
+//         var tileTypeColor = 0x000000;
+//         imageData.setPixel(imageTileX, imageTileY, tileTypeColor);
+//       }
+//     }
+//     var rect = new Rectangle(0, 0, CONST.REGION_TILES_WIDE, CONST.REGION_TILES_HIGH);
+//     imageData.unlock(rect);
 
-    var fileName = 'region_x${regionXIndex}_y${regionYIndex}.png';
-    var path = 'regions/${fileName}';
+//     var fileName = 'region_x${regionXIndex}_y${regionYIndex}.png';
+//     var path = 'regions/${fileName}';
 
-#if (sys)
-    Lib.saveImage( imageData, path );
-#end
-  }
+// #if (sys)
+//     Lib.saveImage( imageData, path );
+// #end
+//   }
 
 
   // 

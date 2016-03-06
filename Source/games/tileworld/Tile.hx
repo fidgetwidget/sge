@@ -13,7 +13,6 @@ class Tile {
 
   public var layer (get, never) :UInt;
   public var type (get, never) :UInt;
-  public var modifier (get, never) :UInt;
 
   public var neighbors (get, set) :Int;
   public var corners (get, set) :Int;
@@ -34,27 +33,21 @@ class Tile {
   }
 
 
-  public function set( chunk: Chunk, x :Int, y :Int, type :UInt, layer :Int = 0, modifier :Int = 0 ) :Void
+  public function set( chunk: Chunk, x :Int, y :Int, type :UInt, layer :Int = 0 ) :Void
   {
     this.chunk = chunk;
 
     data.x = x;
     data.y = y;
     data.layer = layer;
-
     _type = type;
-    _modifier = modifier;
-
     setTileImage();
-
   }
 
 
-  public function change( type :UInt, modifier :Int = -1) :Void
+  public function change( type :UInt ) :Void
   {
     if (type >= 0) _type = type;
-    if (modifier >= 0) _modifier = modifier;
-
     setTileImage();
   }
 
@@ -78,7 +71,7 @@ class Tile {
 
   inline function setTileImage() :Void
   {
-    TileHelper.setBitmapToTileType(data.bitmapData, _type, _modifier, _neighbors, data.layer);
+    TileHelper.setBitmapToTileType(data.bitmapData, _type, _neighbors, data.layer);
     if (type != TYPES.NONE)
       TileHelper.setTileBitmapSides(data.bitmapData, type, sides, data.layer);
   }
@@ -89,7 +82,6 @@ class Tile {
 
   var sideIndex :Int;
   var _type     :UInt;
-  var _modifier :UInt;
   var _neighbors :UInt;
   var _corners :UInt;
 
@@ -102,9 +94,6 @@ class Tile {
   inline function get_layer() :Int return data.layer;
 
   inline function get_type() :UInt return _type;
-
-  inline function get_modifier() :UInt return _modifier;
-
 
   inline function get_neighbors() :Int return _neighbors;
 

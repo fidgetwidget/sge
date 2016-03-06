@@ -1,5 +1,5 @@
 {
   "set" : [
-    "dirt", "clay", "stone"
+    "data/dirt", "data/clay", "data/stone"
   ]
 }

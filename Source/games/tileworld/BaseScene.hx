@@ -14,10 +14,11 @@ import openfl.text.TextFieldAutoSize;
 import openfl.ui.Keyboard;
 import sge.Game;
 import sge.Lib;
-import sge.lib.MemUsage;
 import sge.collision.Collision;
+import sge.lib.MemUsage;
 import sge.scene.Camera;
 import sge.scene.Scene;
+
 
 class BaseScene extends Scene
 {
@@ -29,7 +30,6 @@ class BaseScene extends Scene
   var tries :Int = 0;
   var placeableTileTypes :Array<Int>;
 
-  var tileData : BitmapData;
   var world : World;
   var collisionHandler : WorldCollisionHandler;
   var player :Player;
@@ -63,9 +63,7 @@ class BaseScene extends Scene
     super();
 
     TileHelper.init();
-    placeableTileTypes = [TYPES.NONE, TYPES.DIRT, TYPES.STONE, TYPES.CLAY, TYPES.PUTTY];
-
-    tileData = Assets.getBitmapData("images/tiles.png");
+    placeableTileTypes = [TYPES.NONE, TYPES.DIRT, TYPES.STONE, TYPES.CLAY];
 
     tileObjects = new Map();
     camera = new Camera();

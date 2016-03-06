@@ -2,6 +2,7 @@
   "id": 16,
   "name": "clay",
   "filename": "clay.png",
+  "hasSides": true,
   "variants": [
     {
       "key": "16:0",

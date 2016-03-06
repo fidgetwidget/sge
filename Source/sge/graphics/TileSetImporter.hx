@@ -24,18 +24,18 @@ class TileSetImporter extends SpriteSheetImporter {
 
   static var json :String;
   static var importData :ImportTileSetsData;
-  static var spritesheet :SpriteSheet;
+  static var tileset :TileSetData;
 
   // 
-  // Using the 
+  // TODO: change the import path so that the set's paths are relative
   // 
-  public static function importTileSets( importPath :String, tileSets :TileSets ) :TileSets
+  public static function importTileSets( importPath :String, tileSets :TileSetCollection ) :TileSetCollection
   {
-    if (tileSets == null) tileSets = new TileSets();
+    if (tileSets == null) tileSets = new TileSetCollection();
 
-    trace('Importing TileSets "data/${importPath}.json"');
+    trace('Importing TileSetCollection via "${importPath}.json"');
 
-    json = Assets.getText('data/${importPath}.json');
+    json = Assets.getText('${importPath}.json');
     importData = Json.parse(json);
 
     if (Reflect.hasField(importData, "neighborBitwiseMap")) 
@@ -53,12 +53,13 @@ class TileSetImporter extends SpriteSheetImporter {
 
     for (filename in importData.set)
     {
-      trace('Importing TileSet "data/${filename}.json"');
+      trace('Importing TileSet via "${filename}.json"');
 
-      json = Assets.getText('data/${filename}.json');
-      spritesheet = importFrames(json, spritesheet);
+      json = Assets.getText('${filename}.json');
+      var spritesheet = importFrames(json);
+      tileset = spritesheet.toTileSetData();
 
-      tileSets.addTileSet( spritesheet.toTileSetData() );
+      tileSets.addTileSet( tileset );
     }
 
     return tileSets;
@@ -68,14 +69,15 @@ class TileSetImporter extends SpriteSheetImporter {
   // 
   // Create a TileSet SpriteSheet 
   // 
-  public static function importFrames( json :String, spritesheet :SpriteSheet ) :SpriteSheet
+  public static function importFrames( json :String, spritesheet :SpriteSheet = null ) :SpriteSheet
   {
     var hasSides:Bool, hasCorners:Bool, hasBackground:Bool, hasVariants:Bool;
     var x:Int, y:Int, width:Int, height:Int, cols:Int;
+    var bgsuffix :String;
+
     var type :ImportTilesetData = Json.parse(json);
     var source = 'tiles/${type.filename}';
     var name = type.name;
-
     var suffix = Reflect.hasField(type, 'suffix') ? type.suffix : null;
 
     if (Reflect.hasField(type, "neighborBitwiseMap")) 
@@ -98,11 +100,11 @@ class TileSetImporter extends SpriteSheetImporter {
     spritesheet.id = type.id;
 
     // Setup the Values
-    x       = Reflect.hasField(type, "x")      ? Std.parseInt(type.x)      : 0;
-    y       = Reflect.hasField(type, "y")      ? Std.parseInt(type.y)      : 0;
-    width   = Reflect.hasField(type, "width")  ? Std.parseInt(type.width)  : DEFAULT_TILE_WIDTH;
-    height  = Reflect.hasField(type, "height") ? Std.parseInt(type.height) : DEFAULT_TILE_HEIGHT;
-    cols    = Reflect.hasField(type, "cols")   ? Std.parseInt(type.cols)   : Math.floor( spritesheet.sourceImage.width / width );
+    x       = Std.parseInt(type.x);       x = (x == 0 ? 0 : x);
+    y       = Std.parseInt(type.y);       y = (y == 0 ? 0 : y);
+    width   = Std.parseInt(type.width);   width = (width == 0 ? DEFAULT_TILE_WIDTH : width);
+    height  = Std.parseInt(type.height);  height = (height == 0 ? DEFAULT_TILE_HEIGHT : height);
+    cols    = Std.parseInt(type.cols);    cols = (cols == 0 ? Math.floor( spritesheet.sourceImage.width / width ) : cols);
 
     setBitwiseFrames( spritesheet, x, y, width, height, cols, suffix );
 
@@ -119,16 +121,23 @@ class TileSetImporter extends SpriteSheetImporter {
     if (hasVariants) 
       setVariantFrames( spritesheet, x, y, width, height, cols, suffix, type.variants );
 
+
     if (hasBackground) 
     {
-      var bgx = x + (Reflect.hasField(type.background, "x") ? Std.parseInt(type.background.x) : 0);
-      var bgy = y + (Reflect.hasField(type.background, "y") ? Std.parseInt(type.background.y) : 0);
-      var bgsuffix = (suffix == null ? 'bg' : 'bg_${suffix}');
+      var bgx = Std.parseInt(type.background.x);
+      var bgy = Std.parseInt(type.background.y);
+
+      bgsuffix = (suffix == null ? 'bg' : 'bg_${suffix}');
       
-      setBitwiseFrames( spritesheet, bgx, bgy, width, height, cols, bgsuffix );
+      setBitwiseFrames( spritesheet, x + bgx, y + bgy, width, height, cols, bgsuffix );
 
       if (Reflect.hasField(type.background, "variants") && type.background.variants != null)
         setVariantFrames( spritesheet, bgx, bgy, width, height, cols, bgsuffix, type.background.variants );
+    }
+    else
+    {
+      bgsuffix = (suffix == null ? 'bg' : 'bg_${suffix}');
+      setBitwiseFrames( spritesheet, x, y, width, height, cols, bgsuffix );
     }
 
     return spritesheet;
@@ -137,78 +146,71 @@ class TileSetImporter extends SpriteSheetImporter {
   // 
   // Add an entire bitwise set of frames to the SpriteSheet
   // 
-  static inline function setBitwiseFrames( sheet :SpriteSheet, 
-    x :Int, y :Int, width :Int, height :Int, cols :Int, 
-    ?suffix :String = null ) :Void
+  static inline function setBitwiseFrames( 
+    sheet :SpriteSheet, x :Int, y :Int, width :Int, height :Int, cols :Int, ?suffix :String = null ) :Void
   {
-    var xx:Int, yy:Int, i:Int, frameIndex:Int;
+    var xx:Int, yy:Int, i:Int;
     for (bitVal in 0...neighborBitwiseMap.length)
     {
       i = neighborBitwiseMap[bitVal];
-      xx = i - (Math.floor(i / cols) * cols);
-      yy = Math.floor(i / cols);
+      xx = (i - (Math.floor(i / cols) * cols)) * width;
+      yy = (Math.floor(i / cols)) * height;
 
-      frameIndex = sheet.addFrame(xx, yy, width, height);
       var frameName = '${sheet.id}:${bitVal}';
       if (suffix != null) frameName += '_${suffix}';
 
-      sheet.setFrameName(frameIndex, frameName);
+      addFrame(sheet, frameName, x + xx, y + yy, width, height);
     }
   }
 
   // 
   // Add the side frames to the SpriteSheet
   // 
-  static inline function setSideFrames( sheet :SpriteSheet, 
-    x :Int, y :Int, width :Int, height :Int, cols :Int, 
-    ?suffix :String = null ) :Void
+  static inline function setSideFrames( 
+    sheet :SpriteSheet, x :Int, y :Int, width :Int, height :Int, cols :Int, ?suffix :String = null ) :Void
   {
-    var xx:Int, yy:Int, i:Int, side:Int, frameIndex:Int, frameName:String;
+    var xx:Int, yy:Int, i:Int, side:Int, frameName:String;
 
     for(sideVal in 0...sideMap.length)
     {
       i = sideMap[sideVal];
-      xx = i - (Math.floor(i / cols) * cols);
-      yy = Math.floor(i / cols);
+      xx = (i - (Math.floor(i / cols) * cols)) * width;
+      yy = (Math.floor(i / cols)) * height;
 
-      frameIndex = sheet.addFrame(xx, yy, width, height);
       side = sideNeighborMap[sideVal];
       frameName = '${sheet.id}:s_${side}';
       if (suffix != null) frameName += '_${suffix}';
 
-      sheet.setFrameName(frameIndex, frameName);
+      addFrame(sheet, frameName, x + xx, y + yy, width, height);
     }
   }
 
   // 
   // Add the corner frames to the SpriteSheet
   // 
-  static inline function setCornerFrames( sheet :SpriteSheet, 
-    x :Int, y :Int, width :Int, height :Int, cols :Int, 
-    ?suffix :String = null ) :Void
+  static inline function setCornerFrames( 
+    sheet :SpriteSheet, x :Int, y :Int, width :Int, height :Int, cols :Int, ?suffix :String = null ) :Void
   {
-    var xx:Int, yy:Int, i:Int, corner:Int, frameIndex:Int, frameName:String;
+    var xx:Int, yy:Int, i:Int, corner:Int, frameName:String;
     for(cornerVal in 0...cornerMap.length)
     {
       i = cornerMap[cornerVal];
-      xx = i - (Math.floor(i / cols) * cols);
-      yy = Math.floor(i / cols);
+      xx = (i - (Math.floor(i / cols) * cols)) * width;
+      yy = (Math.floor(i / cols)) * height;
 
-      frameIndex = sheet.addFrame(xx, yy, width, height);
       corner = cornerNeighborMap[cornerVal];
       frameName = '${sheet.id}:s_${corner}';
       if (suffix != null) frameName += '_${suffix}';
 
-      sheet.setFrameName(frameIndex, frameName);
+      addFrame(sheet, frameName, x + xx, y + yy, width, height);
     }
   }
 
   // 
   // Add variants (set or individual) to the SpriteSheet
   // 
-  static inline function setVariantFrames( sheet :SpriteSheet, 
-    x :Int, y :Int, width :Int, height :Int, cols :Int, 
-    ?suffix :String, variants :Array<ImportTileTypeVariantData> ) :Void
+  static inline function setVariantFrames( 
+    sheet :SpriteSheet, x :Int, y :Int, width :Int, height :Int, cols :Int, ?suffix :String, variants :Array<ImportTileTypeVariantData> ) :Void
   {
     var hasSides:Bool, hasCorners:Bool;
     var vx:Int, vy:Int, vcols:Int, vsuffix:String;
@@ -222,10 +224,9 @@ class TileSetImporter extends SpriteSheetImporter {
       {
         hasSides   = Reflect.hasField(variant, "hasSides")   ? variant.hasSides : false;
         hasCorners = Reflect.hasField(variant, "hasCorners") ? variant.hasCorners : false;
-
-        vx = x + (Reflect.hasField(variant, "x") ? Std.parseInt(variant.x) : 0);
-        vy = y + (Reflect.hasField(variant, "y") ? Std.parseInt(variant.y) : 0);
-        vcols = (Reflect.hasField(variant, "cols") ? Std.parseInt(variant.cols) : cols);
+        vx = Std.parseInt(variant.x);
+        vy = Std.parseInt(variant.y);
+        vcols = Std.parseInt(variant.cols); vcols = (vcols == 0 ? cols : vcols);
         vsuffix = suffix == null ? 'v${vi}' : '${suffix}_v${vi}';
 
         setBitwiseFrames( sheet, vx, vy, width, height, vcols, vsuffix );
@@ -237,20 +238,33 @@ class TileSetImporter extends SpriteSheetImporter {
       else
       {
         var frameIndex:Int, count:Int, frameName:String;
-        vx = x + (Reflect.hasField(variant, "x") ? Std.parseInt(variant.x) : 0) * width;
-        vy = y + (Reflect.hasField(variant, "y") ? Std.parseInt(variant.y) : 0) * height;
-        frameIndex = sheet.addFrame(vx, vy, width, height);
+        vx = Std.parseInt(variant.x);
+        vy = Std.parseInt(variant.y);
+        vx = vx * width;
+        vy = vy * height;
+        
         count = 0;
         frameName = suffix == null ? '${variant.key}_v' : '${variant.key}_${suffix}_v';
-
         for (name in sheet.frameNames)
         {
           if (name.indexOf(frameName) >= 0) count++;
         }
         frameName += '$count';
-        sheet.setFrameName(frameIndex, frameName);
+
+        addFrame(sheet, frameName, vx, vy, width, height);
       }
     }
+  }
+
+
+
+  static inline function addFrame(
+    sheet :SpriteSheet, frameName :String, x :Int, y :Int, width :Int, height :Int) :Void
+  {
+    var frameIndex = sheet.addFrame(x, y, width, height);
+    sheet.setFrameName(frameIndex, frameName);
+
+    trace('addFrame $frameName $x $y $width $height');
   }
 
     

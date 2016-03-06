@@ -44,8 +44,6 @@ class Region {
     _chunkTarget = new Point();
     _tObjRect = new Rectangle();
     _tObjTarget = new Point();
-    _chunkMapRect = new Rectangle(0, 0, CONST.CHUNK_TILES_WIDE, CONST.CHUNK_TILES_HIGH);
-    _chunkMapTarget = new Point();
   }
 
 
@@ -129,11 +127,11 @@ class Region {
   }
 
 
-  public inline function getMap() :BitmapData
-  {
-    if (mapDirty) updateMap();
-    return mapData;
-  }
+  // public inline function getMap() :BitmapData
+  // {
+  //   if (mapDirty) updateMap();
+  //   return mapData;
+  // }
 
 
   // 
@@ -213,23 +211,6 @@ class Region {
   }
 
 
-  inline function updateMap() :Void
-  {
-    for (cyi in 0...CONST.REGION_CHUNKS_HIGH)
-    {
-      for (cxi in 0...CONST.REGION_CHUNKS_WIDE)
-      {
-        xx = cxi * CONST.CHUNK_WIDTH;
-        yy = cyi * CONST.CHUNK_HEIGHT;
-        chunk = getChunk(xx, yy);
-        _chunkMapTarget.x = cxi;
-        _chunkMapTarget.x = cyi;
-        _chunkMap = chunk.getMap();
-        mapData.copyPixels(_chunkMap, _chunkMapRect, _chunkMapTarget);
-      }
-    }
-  }
-
   var ix :Int;
   var iy :Int;
   var xx :Int;
@@ -246,9 +227,6 @@ class Region {
   var _tObjTarget :Point;
   var _chunkRect :Rectangle;
   var _chunkTarget :Point;
-  var _chunkMapRect :Rectangle;
-  var _chunkMapTarget :Point;
-  var _chunkMap :BitmapData;
 
   var MAX_CHANGE_COUNT = 4;
 

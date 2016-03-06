@@ -10,16 +10,15 @@ class TYPES {
 
   public static var tileTypeNames (get, never) :Iterator< String >;
 
-  static inline function get_tileTypeIds() :Iterator<UInt> return TileHelper.tileTypeIds;
 
-  static inline function get_tileTypeNames() :Iterator<String> return TileHelper.tileTypeNames;
+  static inline function get_tileTypeIds() :Iterator<UInt> return TileHelper.ids;
+
+  static inline function get_tileTypeNames() :Iterator<String> return TileHelper.names;
 
 
-  public static inline function getTileRGBKey( type :UInt ) :UInt return TileHelper.getTileRGBKey(type);
-
-  public static inline function getIdFromeName( name :String ) :UInt return TileHelper.getIdFromeName(name);
-
-  public static inline function getTypeFromRGB( rgb :UInt ) :UInt return TileHelper.getTypeFromRGB(rgb);
+  // public static inline function getTileRGBKey( type :UInt ) :UInt return TileHelper.getTileRGBKey(type);
+  // public static inline function getIdFromeName( name :String ) :UInt return TileHelper.getIdFromeName(name);
+  // public static inline function getTypeFromRGB( rgb :UInt ) :UInt return TileHelper.getTypeFromRGB(rgb);
 
 
   // Because we don't have a None tileType, we need to rgb value some other way

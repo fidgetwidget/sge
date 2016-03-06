@@ -18,7 +18,7 @@ import sge.lib.MemUsage;
 import sge.collision.Collision;
 import sge.scene.Camera;
 import sge.scene.Scene;
-import sge.graphics.TileSets;
+import sge.graphics.TileSetCollection;
 import sge.graphics.TileSetImporter;
 
 
@@ -39,16 +39,16 @@ class DebugRenderTiles extends Scene
   var currentWorldX(get, never) :Float;
   var currentWorldY(get, never) :Float;
 
-
+  var collection :TileSetCollection;
 
   public function new() 
   { 
     super();
 
-    var tilesets :TileSets = new TileSets();
-    TileSetImporter.importTileSets('import', tilesets);
+    collection = new TileSetCollection();
+    TileSetImporter.importTileSets('data/import', collection);
 
-    TileHelper.init();
+    // TileHelper.init();
     camera = new Camera();
     mouseDragStart = new Point();
     cameraDragStart = new Point();
@@ -65,6 +65,8 @@ class DebugRenderTiles extends Scene
 
   override private function onReady() 
   {
+    trace('onReady');
+
     init_camera();
     image = new Sprite();
     _sprite.addChild(image);
@@ -72,15 +74,16 @@ class DebugRenderTiles extends Scene
     var x = 10;
     var y = 10;
 
-    for( id in TYPES.tileTypeIds )
+    trace('start loop');
+    for( id in collection.tileSetIds )
     {
 
       if (id == TYPES.NONE) continue;
 
       for ( n in 0...NEIGHBORS.SIDES )
       {
-        var key = TileHelper.getTileKey(id, 0, n, LAYERS.BASE);
-        var data = TileHelper.getBitmapData(key);
+        var key = collection.getFrameKey(id, n);
+        var data = collection.getTileFrameById(id, key, false);
         if (data == null) continue;
         var bitmap = new Bitmap(data, PixelSnapping.ALWAYS, false);
 
@@ -95,8 +98,8 @@ class DebugRenderTiles extends Scene
 
       for ( n in 0...NEIGHBORS.SIDES )
       {
-        var key = TileHelper.getTileKey(id, 0, n, LAYERS.BACKGROUND);
-        var data = TileHelper.getBitmapData(key);
+        var key = collection.getFrameKey(id, n, true);
+        var data = collection.getTileFrameById(id, key, false);
         if (data == null) continue;
         var bitmap = new Bitmap(data, PixelSnapping.ALWAYS, false);
 

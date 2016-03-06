@@ -2,7 +2,8 @@
   "id": 10,
   "name": "dirt",
   "filename": "dirt.png",
-  "bg" : {
+  "hasSides": true,
+  "background" : {
     "x": "0",
     "y": "64"
   }

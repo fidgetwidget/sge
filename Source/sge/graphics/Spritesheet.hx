@@ -145,10 +145,12 @@ class SpriteSheet {
   public inline function toTileSetData() :TileSetData
   {
     var data :TileSetData = {
-      name: this.name, 
-      source: this.sourceImage,
+      name:     this.name, 
+      id:       this.id,
+      source:   this.sourceImage,
       tileData: null,
-      tileMap: null
+      tileMap:  null,
+      variantCount: null
     };
 
     data.tileData = toArray();  

@@ -136,12 +136,6 @@ class Chunk {
   }
 
 
-  public inline function getMap() :BitmapData
-  {
-    updateMap();
-    return _mapData;
-  }
-
   // 
   // Internal Functions
   // 
@@ -195,18 +189,6 @@ class Chunk {
   }
 
 
-  // inline function getTile_local( x :Int, y :Int ) :Tile
-  // {
-  //   var index = getIndex(x, y);
-  //   return tiles[index];
-  // }
-
-  // inline function getCollision_local( x :Int, y :Int ) :Int
-  // {
-  //   var index = getIndex(x, y);
-  //   return tileCollision[index]; 
-  // }
-
 
   inline function getNewTile() : Tile  return TilePool.instance.get();
 
@@ -247,27 +229,6 @@ class Chunk {
 
     _cache.copyPixels(_backgroundLayerBitmap, _chunkRect, _zero);
     _cache.copyPixels(_collisionLayerBitmap,  _chunkRect, _zero, null, null, true);
-  }
-
-
-  inline function updateMap() :Void
-  {
-    var tile :Tile;
-    var rgb :UInt;
-    for (tyi in 0...CONST.REGION_CHUNKS_HIGH)
-    {
-      for (txi in 0...CONST.REGION_CHUNKS_WIDE)
-      {
-        tile = getTile(txi * CONST.TILE_WIDTH, tyi * CONST.TILE_HEIGHT, LAYERS.BASE);
-
-        if (tile.type == TYPES.NONE) tile = getTile(txi * CONST.TILE_WIDTH, tyi * CONST.TILE_HEIGHT, LAYERS.BACKGROUND);
-        if (tile.type == TYPES.NONE) 
-          rgb = TYPES.NONE_RGB;
-        else
-          rgb = TYPES.getTileRGBKey( tile.type );
-        _mapData.setPixel(txi, tyi, rgb);
-      }
-    }
   }
 
 
@@ -386,7 +347,6 @@ class Chunk {
     // // corners includes the sides value
     // tile.corners = nval;
 
-    
   }
 
   inline function updateCollision_neighborsChanged( tile :Tile ) :Void

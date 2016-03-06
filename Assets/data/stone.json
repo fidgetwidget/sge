@@ -2,9 +2,11 @@
   "id": 20,
   "name": "stone",
   "filename": "stone.png",
+  "hasSides": true,
   "variants": [
     {
-      "set": true,
+      "isSet": true,
+      "hasSides": true,
       "x": "0",
       "y": "64"
     }
