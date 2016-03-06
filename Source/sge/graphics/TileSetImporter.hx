@@ -100,11 +100,11 @@ class TileSetImporter extends SpriteSheetImporter {
     spritesheet.id = type.id;
 
     // Setup the Values
-    x       = Std.parseInt(type.x);       x = (x == 0 || x == null ? 0 : x);
-    y       = Std.parseInt(type.y);       y = (y == 0 || y == null ? 0 : y);
-    width   = Std.parseInt(type.width);   width   = (width == 0 || width == null ? DEFAULT_TILE_WIDTH : width);
-    height  = Std.parseInt(type.height);  height  = (height == 0 || height == null ? DEFAULT_TILE_HEIGHT : height);
-    cols    = Std.parseInt(type.cols);    cols = (cols == 0 || cols == null ? Math.floor( spritesheet.sourceImage.width / width ) : cols);
+    x       = Std.parseInt(type.x);       x       = (invalidValue(x) ? 0 : x);
+    y       = Std.parseInt(type.y);       y       = (invalidValue(y) ? 0 : y);
+    width   = Std.parseInt(type.width);   width   = (invalidValue(width) ? DEFAULT_TILE_WIDTH : width);
+    height  = Std.parseInt(type.height);  height  = (invalidValue(height) ? DEFAULT_TILE_HEIGHT : height);
+    cols    = Std.parseInt(type.cols);    cols    = (invalidValue(cols) ? Math.floor( spritesheet.sourceImage.width / width ) : cols);
 
     setBitwiseFrames( spritesheet, x, y, width, height, cols, suffix );
 
@@ -141,6 +141,15 @@ class TileSetImporter extends SpriteSheetImporter {
     }
 
     return spritesheet;
+  }
+
+  static inline function invalidValue( value :Dynamic ) :Bool
+  {
+#if html5    
+    return (value == 0 || value == null);
+#else
+    return value == 0;
+#end
   }
 
   // 
@@ -226,7 +235,7 @@ class TileSetImporter extends SpriteSheetImporter {
         hasCorners = Reflect.hasField(variant, "hasCorners") ? variant.hasCorners : false;
         vx = Std.parseInt(variant.x);
         vy = Std.parseInt(variant.y);
-        vcols = Std.parseInt(variant.cols); vcols = (vcols == 0 ? cols : vcols);
+        vcols = Std.parseInt(variant.cols); vcols = (invalidValue(vcols) ? cols : vcols);
         vsuffix = suffix == null ? 'v${vi}' : '${suffix}_v${vi}';
 
         setBitwiseFrames( sheet, vx, vy, width, height, vcols, vsuffix );
