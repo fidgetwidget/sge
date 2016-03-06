@@ -71,9 +71,13 @@ class Tile {
 
   inline function setTileImage() :Void
   {
+    if (type == TYPES.NONE)
+    {
+      TileHelper.setBitmapToBlank(data.bitmapData);
+      return;
+    }
     TileHelper.setBitmapToTileType(data.bitmapData, _type, _neighbors, data.layer);
-    if (type != TYPES.NONE)
-      TileHelper.setTileBitmapSides(data.bitmapData, type, sides, data.layer);
+    TileHelper.setTileBitmapSides(data.bitmapData, type, sides, data.layer);
   }
 
   // 

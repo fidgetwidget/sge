@@ -184,7 +184,7 @@ class Chunk {
     var h = CONST.CHUNK_HEIGHT;
     _backgroundLayerBitmap = new BitmapData( w, h, true, 0 );
     _collisionLayerBitmap = new BitmapData( w, h, true, 0 );
-    _cache = new BitmapData( w, h, true, 0x00ffffff );
+    _cache = new BitmapData( w, h, true, 0 );
     _mapData = new BitmapData( CONST.CHUNK_TILES_WIDE, CONST.CHUNK_TILES_HIGH, false, TYPES.NONE_RGB);
   }
 

@@ -159,9 +159,9 @@ class Region {
 
   inline function init_data() :Void 
   { 
-    _cache = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, false );
-    _bg = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, false );
-    _fg = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, false );
+    _cache = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, true, 0 );
+    _bg = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, true, 0 );
+    _fg = new BitmapData( CONST.REGION_WIDTH, CONST.REGION_HEIGHT, true, 0 );
 
     mapData = new BitmapData( CONST.REGION_TILES_WIDE, CONST.REGION_TILES_HIGH, false );
     mapDirty = true;

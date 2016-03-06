@@ -34,6 +34,11 @@ class TileHelper {
   // CopyPixel Helpers
   // 
 
+  public static inline function setBitmapToBlank( bitmapData :BitmapData ) :Void
+  {
+    bitmapData.copyPixels( instance.blank, instance.rect, instance.zero );
+  }
+
   public static inline function setBitmapToTileType( bitmapData :BitmapData, tileType :UInt, neighbors :Int = 0, layer :UInt = LAYERS.BASE ) :Void
   {
     var key = instance._collection.getFrameKey(tileType, neighbors, layer == LAYERS.BACKGROUND);
@@ -64,6 +69,7 @@ class TileHelper {
 
 
   var _collection :TileSetCollection;
+  var blank :BitmapData;
   var rect :Rectangle;
   var zero :Point;
 
@@ -71,6 +77,7 @@ class TileHelper {
   {
     rect = new Rectangle(0, 0, CONST.TILE_WIDTH, CONST.TILE_HEIGHT);
     zero = new Point();
+    blank = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, true, 0);
     _collection = new TileSetCollection();
     TileSetImporter.DEFAULT_TILE_WIDTH = CONST.TILE_WIDTH;
     TileSetImporter.DEFAULT_TILE_HEIGHT = CONST.TILE_HEIGHT;

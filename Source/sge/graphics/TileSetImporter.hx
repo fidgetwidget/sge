@@ -100,11 +100,11 @@ class TileSetImporter extends SpriteSheetImporter {
     spritesheet.id = type.id;
 
     // Setup the Values
-    x       = Std.parseInt(type.x);       x = (x == 0 ? 0 : x);
-    y       = Std.parseInt(type.y);       y = (y == 0 ? 0 : y);
-    width   = Std.parseInt(type.width);   width = (width == 0 ? DEFAULT_TILE_WIDTH : width);
-    height  = Std.parseInt(type.height);  height = (height == 0 ? DEFAULT_TILE_HEIGHT : height);
-    cols    = Std.parseInt(type.cols);    cols = (cols == 0 ? Math.floor( spritesheet.sourceImage.width / width ) : cols);
+    x       = Std.parseInt(type.x);       x = (x == 0 || x == null ? 0 : x);
+    y       = Std.parseInt(type.y);       y = (y == 0 || y == null ? 0 : y);
+    width   = Std.parseInt(type.width);   width   = (width == 0 || width == null ? DEFAULT_TILE_WIDTH : width);
+    height  = Std.parseInt(type.height);  height  = (height == 0 || height == null ? DEFAULT_TILE_HEIGHT : height);
+    cols    = Std.parseInt(type.cols);    cols = (cols == 0 || cols == null ? Math.floor( spritesheet.sourceImage.width / width ) : cols);
 
     setBitwiseFrames( spritesheet, x, y, width, height, cols, suffix );
 
