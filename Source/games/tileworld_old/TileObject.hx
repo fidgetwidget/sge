@@ -1,4 +1,4 @@
-package games.tileworld;
+package games.tileworld_old;
 
 import openfl.Assets;
 import openfl.display.Bitmap;
@@ -7,9 +7,9 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import sge.geom.base.Rectangle as BaseRectangle;
 
-import games.tileworld.world.Region;
-import games.tileworld.world.World;
-import games.tileworld.world.WorldCollisionHandler;
+import games.tileworld_old.world.Region;
+import games.tileworld_old.world.World;
+import games.tileworld_old.world.WorldCollisionHandler;
 
 
 class TileObject {

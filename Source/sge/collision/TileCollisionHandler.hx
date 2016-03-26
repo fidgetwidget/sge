@@ -50,53 +50,43 @@ class TileCollisionHandler {
 
   public function testCollision_rectagle( rect :Rectangle ) :Bool
   {
-    xx = rect.x;
-    yy = rect.y;
-    hw = rect.width * 0.5;
-    hh = rect.height * 0.5;
+    if (collisions == null) collisions = new Array();
+    else while (collisions.length > 0) collisions.pop();
 
-    while (xx <= rect.x + rect.width)
-    {
-      while (yy <= rect.y + rect.height)
-      {
-        
-        dir = tiles.getCollision(xx, yy);
-        if (dir == 0) 
-        {
-          yy += Math.min( TILE_HEIGHT, hh );
-          continue;
-        }
+    collisions = collision_bounds(rect.x, rect.y, rect.width, rect.height, collisions);
 
-        tx = Math.floor(xx - Lib.remainder_float(xx, TILE_WIDTH));
-        ty = Math.floor(yy - Lib.remainder_float(yy, TILE_HEIGHT));
-
-        if ( collision_tile_rect( dir, tx, ty, rect, collision ) != null) return true;
-
-        yy += Math.min( TILE_HEIGHT, hh );
-      }
-      yy = rect.y;
-      xx += Math.min( TILE_WIDTH, hw );
-    }
-
-    return false;
+    return collisions != null && collisions.length > 0;
   }
   // var xx :Float;
   // var yy :Float;
   // var hw :Float;
   // var hh :Float;
+  // var collisions :Array<Collision>;
 
 
   public function collide( aabb :AABB, collisions :Array<Collision> ) :Array<Collision>
   {
-    var _text = '';
+    collisions = collision_bounds(aabb.left, aabb.top, aabb.width, aabb.height, collisions);
+
+    return collisions;
+  }
+
+
+  inline function collision_bounds( x :Float, y :Float, width :Float, height :Float, collisions :Array<Collision> = null ) :Array<Collision>
+  {
+    var text = '';
     if (collisions == null) collisions = new Array();
 
-    xx = aabb.left;
-    yy = aabb.top;
+    xx = x;
+    yy = y;
+    hw = width * 0.5;
+    hh = height * 0.5;
+    cx = x + hw;
+    cy = y + hh;
 
-    while (xx <= aabb.right)
+    while (xx <= x + width)
     {
-      while (yy <= aabb.bottom)
+      while (yy <= y + height)
       {
         dir = tiles.getCollision(xx, yy);
         tx = Math.floor(xx / TILE_WIDTH) * TILE_WIDTH;
@@ -104,90 +94,67 @@ class TileCollisionHandler {
 
         if (dir != 0)
         {
-          collision = collision_tile_aabb( dir, tx, ty, aabb, collision );
+          text += '($dir|$tx|$ty|$x|$y|$width|$height)';
+
+          collision = collision_tile_bounds( dir, tx, ty, cx, cy, hw, hh, collision );
           if (collision != null)
           {
             collisions.push(collision.clone());
           }
         }
-        yy += Math.min( TILE_HEIGHT, aabb.halfHeight );
+        yy += Math.min( TILE_HEIGHT, hh );
       }
-      yy = aabb.top;
-      xx += Math.min( TILE_WIDTH, aabb.halfWidth );
+      yy = y;
+      xx += Math.min( TILE_WIDTH, hw );
     }
 
-    Game.debug.setLabel('collision', _text);
+    Game.debug.setLabel('collisionBounds', text);
 
     return collisions;
   }
   // var collision :Collision;
   // var xx :Float;
   // var yy :Float;
-
-
-
-  inline function collision_tile_aabb( dir :UInt, tx :Int, ty :Int, aabb :AABB, collision :Collision = null ) :Collision
-  {
-    if (dir == 0) return null;
-
-    dx = (tx + HALF_TILE_WIDTH) - (aabb.centerX);
-    px = (HALF_TILE_WIDTH + aabb.halfWidth) - Math.abs(dx);
-
-    if (px <= 0) return null;
-
-    dy = (ty + HALF_TILE_HEIGHT) - (aabb.centerY);
-    py = (HALF_TILE_HEIGHT + aabb.halfHeight) - Math.abs(dy);
-
-    if (py <= 0) return null;
-
-    px *= dx > 0 ? 1 : -1;
-    py *= dy > 0 ? 1 : -1;
-
-    return cleanCollision( dir, px, py, collision );
-  }
-  // var dx :Float;
-  // var dy :Float;
-  // var px :Float;
-  // var py :Float;
-
-
-  inline function collision_tile_rect( dir :UInt, tx :Int, ty :Int, rect :Rectangle, collision :Collision = null ) :Collision
-  {
-    hw = rect.width * 0.5;
-    hh = rect.height * 0.5;
-
-    dx = tx + HALF_TILE_WIDTH - (rect.x + hw);
-    px = (HALF_TILE_WIDTH + hw) - Math.abs(dx);
-
-    if (px <= 0) return null;
-
-    dy = ty + HALF_TILE_HEIGHT - (rect.y + hh);
-    py = (HALF_TILE_HEIGHT + hh) - Math.abs(dy);
-
-    if (py <= 0) return null;
-
-    px *= dx > 0 ? 1 : -1;
-    py *= dy > 0 ? 1 : -1;
-
-    return cleanCollision( dir, px, py, collision );
-  }
+  // var cx :Float;
+  // var cy :Float;
   // var hw :Float;
   // var hh :Float;
-  // var dx :Float;
-  // var dy :Float;
-  // var px :Float;
-  // var py :Float;
 
 
   inline function collision_tile_point( dir :UInt, tx :Int, ty :Int, x :Float, y :Float, collision :Collision = null ) :Collision
   {
-    dx = tx + HALF_TILE_WIDTH - x;
-    px = HALF_TILE_WIDTH - Math.abs(dx);
+    return collision_tile_bounds(dir, tx, ty, x, y, 0, 0, collision);
+  }
+
+  inline function collision_tile_aabb( dir :UInt, tx :Int, ty :Int, aabb :AABB, collision :Collision = null ) :Collision
+  {
+    return collision_tile_bounds(dir, tx, ty, aabb.centerX, aabb.centerY, aabb.halfWidth, aabb.halfHeight, collision);
+  }
+
+  inline function collision_tile_rect( dir :UInt, tx :Int, ty :Int, rect :Rectangle, collision :Collision = null ) :Collision
+  {
+    if (dir == 0) return null;
+
+    hw = rect.width * 0.5;
+    hh = rect.height * 0.5;
+
+    return collision_tile_bounds(dir, tx, ty, rect.x + hw, rect.y + hh, hw, hh, collision);
+  }
+  // var hw :Float
+  // var hh :Float
+
+
+  inline function collision_tile_bounds( dir :UInt, tx :Int, ty :Int, cx :Float, cy :Float, hw :Float, hh :Float, collision :Collision = null ) :Collision
+  {
+    if (dir == 0) return null;
+
+    dx = (tx + HALF_TILE_WIDTH) - (cx);
+    px = (HALF_TILE_WIDTH + hw) - Math.abs(dx);
 
     if (px <= 0) return null;
 
-    dy = ty + HALF_TILE_HEIGHT - y;
-    py = HALF_TILE_HEIGHT - Math.abs(dy);
+    dy = (ty + HALF_TILE_HEIGHT) - (cy);
+    py = (HALF_TILE_HEIGHT + hh) - Math.abs(dy);
 
     if (py <= 0) return null;
 
@@ -204,15 +171,26 @@ class TileCollisionHandler {
 
   inline function cleanCollision( dir :UInt, px :Float, py :Float, collision :Collision = null ) :Collision 
   {
+    var text = '{$px|$py}';
     // Ensure tile direction allows for collision
     if (dir & DIRECTION.ALL == DIRECTION.ALL)
     {
+      text += 'ALL[$dir]';
+      // if (Math.abs(px) > HALF_TILE_WIDTH)
+      // {
+      //   px = px > 0 ? px - TILE_WIDTH : px + TILE_WIDTH;
+      // }
 
+      // if (Math.abs(py) > HALF_TILE_HEIGHT)
+      // {
+      //   py = py > 0 ? py - TILE_HEIGHT : py + TILE_HEIGHT;
+      // }
     }
     else
     {
-      if (dir & DIRECTION.VERTICAL != 0)
+      if (dir & DIRECTION.VERTICAL == DIRECTION.VERTICAL)
       {
+        text += 'VERTICAL[$dir]';
         // up & down are fine as is, lets check for left or right
         if (dir & DIRECTION.LEFT != 0)
         {
@@ -227,15 +205,15 @@ class TileCollisionHandler {
           px = 0;
         }
 
-        if (Math.abs(py) > HALF_TILE_HEIGHT)
-        {
-          // trace('collision improvement condiction met.');
-          // TODO: flip the collision direction
-        }
+        // if (Math.abs(py) > HALF_TILE_HEIGHT)
+        // {
+        //   py = py > 0 ? py - TILE_HEIGHT : py + TILE_HEIGHT;
+        // }
 
       }
-      else if (dir & DIRECTION.HORIZONTAL != 0)
+      else if (dir & DIRECTION.HORIZONTAL == DIRECTION.HORIZONTAL)
       {
+        text += 'HORIZONTAL[$dir]';
         // left & right are fine as is, lets check for up or down
         if (dir & DIRECTION.UP != 0)
         {
@@ -250,11 +228,10 @@ class TileCollisionHandler {
            py = 0;
         }
 
-        if (Math.abs(px) > HALF_TILE_WIDTH)
-        {
-          // trace('collision improvement condiction met.');
-          // TODO: flip the collision direction
-        }
+        // if (Math.abs(px) > HALF_TILE_WIDTH)
+        // {
+        //   px = px > 0 ? px - TILE_WIDTH : px + TILE_WIDTH;
+        // }
 
       }
       else
@@ -287,15 +264,22 @@ class TileCollisionHandler {
            py = 0;
         }
       }
-      
     }
 
-    if (px == 0 && py == 0) return null;
+    if (px == 0 && py == 0) 
+    {
+      text += '(NONE)';
+      Game.debug.setLabel('cleanCollision', text);
+      return null;
+    }
 
     if (collision == null) collision = new Collision();
 
     collision.px = px;
     collision.py = py;
+
+    text += '($px|$py)';
+    Game.debug.setLabel('cleanCollision', text);
 
     return collision;
 
@@ -307,10 +291,13 @@ class TileCollisionHandler {
   var py :Float;
   var xx :Float;
   var yy :Float;
+  var cx :Float;
+  var cy :Float;
   var hw :Float;
   var hh :Float;
   var tx :Int;
   var ty :Int;
   var collision :Collision;
+  var collisions :Array<Collision>;
 
 }

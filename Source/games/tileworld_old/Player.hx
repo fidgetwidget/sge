@@ -1,4 +1,4 @@
-package games.tileworld2;
+package games.tileworld_old;
 
 import openfl.Assets;
 import openfl.display.Bitmap;
@@ -14,14 +14,14 @@ import sge.scene.Camera;
 import sge.scene.Scene;
 import sge.collision.AABB;
 import sge.collision.Collision;
-import sge.collision.TileCollisionHandler;
+
+import games.tileworld_old.world.WorldCollisionHandler;
 
 class Player {
 
   var DEFAULT_JUMP_POWER = 10;
   var DEFAULT_JUMP_TIMER = 30;
   var BASE_JUMP_VELOCITY_CONST = 0.25;
-  var GRAVITY_ACCELERATION = 1;
 
 
   // 
@@ -60,7 +60,7 @@ class Player {
 
 
   var scene :Scene;
-  var collisionHandler :TileCollisionHandler;
+  var wch :WorldCollisionHandler;
   var camera :Camera;
   var imageOffsetX :Float; // the offset for player position to image position
   var imageOffsetY :Float; // the offset for player position to image position
@@ -72,10 +72,10 @@ class Player {
   // 
   // Constructor
   // 
-  public function new( scene :Scene, collisionHandler :TileCollisionHandler ) 
+  public function new( scene :Scene, wch :WorldCollisionHandler ) 
   {
     this.scene = scene;
-    this.collisionHandler = collisionHandler;
+    this.wch = wch;
     this.camera = scene.camera;
     x = 0;
     y = 0;
@@ -109,10 +109,12 @@ class Player {
       jumpTimer--;
     }
 
-    setPosition( x + velocityX, y + velocityY );
+    var collision = wch.testCollision_point(x, y + 1);
+    
+    // Game.debug.setLabel('player', '$x|$y v$velocityX|$velocityY');
+    // Game.debug.setLabel('jump', '$jumpTimer $collision');
 
-    if (collisionHandler.testCollision(x, y + 1))
-      readyJump();
+    setPosition( x + velocityX, y + velocityY );
   }
 
 
@@ -126,6 +128,7 @@ class Player {
   {
     if (Math.abs(px) > 0) velocityX = 0;
     if (Math.abs(py) > 0) velocityY = 0;
+    if (Math.abs(py) > 0) doLanding();
 
     setPosition( x - px, y - py );
   }
@@ -143,12 +146,14 @@ class Player {
   {
     velocityY -= DEFAULT_JUMP_POWER;
     jumpTimer = DEFAULT_JUMP_TIMER;
+    _canJump = false;
   }
 
 
-  public inline function readyJump() :Void
+  public inline function doLanding() :Void
   {
     jumpTimer = 0;
+    _canJump = true;
   }
 
 
@@ -184,10 +189,11 @@ class Player {
       }
       else
       {
+        jumpTimer = 0;
         _readyToJump = true;
       }
       // gravity
-      velocityY += GRAVITY_ACCELERATION;
+      velocityY += CONST.GRAVITY_ACCELERATION;
     }
     else
     {
@@ -243,6 +249,7 @@ class Player {
   var _velocityY :Float;
 
   var jumpTimer :Int = 0;
+  var _canJump :Bool;
   var _readyToJump :Bool;
 
   // x & y
@@ -272,8 +279,7 @@ class Player {
   inline function get_camera_x() :Float return camera == null ? 0 : camera.x;
   inline function get_camera_y() :Float return camera == null ? 0 : camera.y;
 
-  inline function get_canJump() :Bool return _readyToJump && jumpTimer == 0;
-
+  inline function get_canJump() :Bool return jumpTimer == 0 && _canJump && _readyToJump && wch.testCollision_point(x, y + 8);
   inline function get_isJumping() :Bool return jumpTimer > 0;
 
 }

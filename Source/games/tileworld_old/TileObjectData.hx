@@ -1,4 +1,4 @@
-package games.tileworld;
+package games.tileworld_old;
 
 import openfl.display.BitmapData;
 import sge.geom.base.Rectangle; // we just care about the x, y, width and height

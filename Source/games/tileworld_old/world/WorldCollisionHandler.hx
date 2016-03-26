@@ -1,4 +1,4 @@
-package games.tileworld.world;
+package games.tileworld_old.world;
 
 
 import openfl.geom.Rectangle;

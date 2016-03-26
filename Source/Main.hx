@@ -10,8 +10,8 @@ import samples.TestScene;
 import samples.brickBreaker.BrickBreaker;
 import samples.blockDrop.BlockDrop;
 import samples.snake.Snake;
-import games.tileworld2.BaseScene;
-import games.tileworld2.TileRenderTest;
+import games.tileworld.BaseScene;
+import games.tileworld.TileRenderTest;
 
 
 class Main extends Sprite {
@@ -48,7 +48,6 @@ class Main extends Sprite {
     // Push your first scene (loading scene?)
     // 
     Game.sceneManager.pushScene( new BaseScene() );
-
   }
 
   

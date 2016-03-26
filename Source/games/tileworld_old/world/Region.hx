@@ -1,8 +1,8 @@
-package games.tileworld.world;
+package games.tileworld_old.world;
 
-import games.tileworld.CONST;
-import games.tileworld.LAYERS;
-import games.tileworld.TileObject;
+import games.tileworld_old.CONST;
+import games.tileworld_old.LAYERS;
+import games.tileworld_old.TileObject;
 
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;

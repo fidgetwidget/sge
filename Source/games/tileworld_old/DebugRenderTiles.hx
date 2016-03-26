@@ -1,4 +1,4 @@
-package games.tileworld;
+package games.tileworld_old;
 
 import openfl.Assets;
 import openfl.display.Bitmap;

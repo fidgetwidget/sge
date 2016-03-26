@@ -1,4 +1,4 @@
-package games.tileworld2;
+package games.tileworld;
 
 import openfl.Assets;
 import openfl.display.Bitmap;

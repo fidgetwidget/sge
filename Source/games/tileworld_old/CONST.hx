@@ -1,4 +1,4 @@
-package games.tileworld;
+package games.tileworld_old;
 
 @:publicFields
 class CONST {

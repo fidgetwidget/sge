@@ -1,7 +1,7 @@
-package games.tileworld;
+package games.tileworld_old;
 
 import openfl.display.BitmapData;
-import games.tileworld.world.Chunk;
+import games.tileworld_old.world.Chunk;
 
 
 class Tile {
