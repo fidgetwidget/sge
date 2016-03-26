@@ -712,7 +712,10 @@ class BaseScene extends TileScene
     _currentTileTypeIndex = value;
     _currentTileType = placeableTileTypes[_currentTileTypeIndex];
 
-    tileRenderer.copyBitmapData(currentTile.bitmapData, _currentTileType);
+    if (_currentTileType == TILE_TYPES.NONE)
+      tileRenderer.clearBitmapData(currentTile.bitmapData);
+    else
+      tileRenderer.copyBitmapData(currentTile.bitmapData, _currentTileType);
 
     return _currentTileTypeIndex;
   }

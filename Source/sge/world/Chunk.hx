@@ -59,7 +59,7 @@ class Chunk extends RenderTarget {
   }
 
 
-  public function init( x :Int, y :Int, z :Int = TILE_LAYERS.DEFAULT ) :Void
+  public function init( x :Int, y :Int, z :Int ) :Void
   {
     _frame.x = x;
     _frame.y = y;
@@ -132,6 +132,7 @@ class Chunk extends RenderTarget {
       {
         ti = (iy * WORLD_VALUES.CHUNK_TILES_WIDE) + ix;
         tiles[ti] = createTile(ix, iy);
+        dirtyFrames.push(tiles[ti].frame);
         iy++;
       }
       iy = 0;
@@ -152,6 +153,7 @@ class Chunk extends RenderTarget {
     yy = y * TILE_VALUES.TILE_HEIGHT;
 
     tile.init(xx, yy);
+    tile.z = z;
     return tile;
   }
 
@@ -186,7 +188,7 @@ class Chunk extends RenderTarget {
       df = dirtyFrames.pop();
       _target.x = df.x;
       _target.y = df.y;
-      _frame.bitmapData.copyPixels(df.bitmapData, _tileRect, _target, null, null, true);
+      _frame.bitmapData.copyPixels(df.bitmapData, _tileRect, _target);
     }
     _dirty = false;
   }

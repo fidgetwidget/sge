@@ -71,14 +71,7 @@ class Tile extends RenderTarget {
     si = TILE_VALUES.NEIGHBOR_TYPES.indexOf(side);
     _neighborTypes.set(si, type);
 
-    // if (type == TILE_TYPES.NONE)
-    //   _neighbors |= side;
-    // else
-    //   _neighbors &= ~side;
-
-    // trace('tile.setNeighborType( $side, $type ) : $_neighbors');
-
-    _dirty = true;
+    if (_type != TILE_TYPES.NONE) _dirty = true;
   }
 
 
@@ -87,9 +80,15 @@ class Tile extends RenderTarget {
     if (Tile.renderer == null) 
       throw new Error("Tile.updateBitmapData() Tile Renderer not found.");
 
-    Tile.renderer.updateTileFrame(_frame, _type, _neighbors);
-    Tile.renderer.updateTileFrame_sides(_frame, _type, _neighborTypes, z);
-    
+    if (_type == TILE_TYPES.NONE)
+    {
+      Tile.renderer.clearBitmapData(_frame.bitmapData);
+    }
+    else
+    {
+      Tile.renderer.updateTileFrame(_frame, _type, _neighbors);
+      Tile.renderer.updateTileFrame_sides(_frame, _type, _neighborTypes, z);
+    }
     _dirty = false;
   }
 
@@ -143,7 +142,7 @@ class Tile extends RenderTarget {
     if (_neighbors != value)
     {
       _neighbors = value;
-      _dirty = true;  
+      if (_type != TILE_TYPES.NONE) _dirty = true;
     }
     return _neighbors;
   }
@@ -155,7 +154,7 @@ class Tile extends RenderTarget {
     if (_corners != value)
     {
       _corners = value;
-      _dirty = true;
+      if (_type != TILE_TYPES.NONE) _dirty = true;
     }
     return _corners;
   }  
@@ -163,9 +162,7 @@ class Tile extends RenderTarget {
 
   inline function get_frame() :TileFrame
   {
-    if (_dirty)
-      updateBitmapData();
-
+    if (_dirty) updateBitmapData();
     return _frame;
   }
 

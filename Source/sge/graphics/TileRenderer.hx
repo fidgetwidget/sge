@@ -88,6 +88,11 @@ class TileRenderer {
     frame.bitmapData.copyPixels( blank, rect, zero );
   }
 
+  public inline function clearBitmapData( bitmapData :BitmapData ) :Void
+  {
+    bitmapData.copyPixels( blank, rect, zero ); 
+  }
+
   var neighborTileType :UInt;
   var neighborSideVal  :UInt;
 
