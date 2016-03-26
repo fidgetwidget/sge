@@ -1,6 +1,7 @@
 package sge.graphics;
 
 import openfl.display.BitmapData;
+import sge.tiles.TILE_LAYERS;
 
 
 class TileSetCollection {
@@ -57,17 +58,17 @@ class TileSetCollection {
   // 
   // get the FrameKey for the given tile state
   // 
-  public inline function getFrameKey( frameType :UInt, neighborVal :UInt, background :Bool = false ) :String
+  public inline function getFrameKey( frameType :UInt, neighborVal :UInt, layer :Int = TILE_LAYERS.DEFAULT ) :String
   {
-    return '${frameType}:${neighborVal}' + (background ? '_bg' : '');
+    return '${frameType}:${neighborVal}' + (layer == TILE_LAYERS.BACKGROUND ? '_bg' : '');
   }
 
   // 
   // get the FrameKey for the side overlap
   // 
-  public inline function getSideFrameKey( frameType :UInt, sideVal :UInt, background :Bool = false ) :String
+  public inline function getSideFrameKey( frameType :UInt, sideVal :UInt, layer :Int = TILE_LAYERS.DEFAULT ) :String
   {
-    return '${frameType}:s_${sideVal}' + (background ? '_bg' : '');
+    return '${frameType}:s_${sideVal}' + (layer == TILE_LAYERS.BACKGROUND ? '_bg' : '');
   }
 
 

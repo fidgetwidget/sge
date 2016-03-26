@@ -1,6 +1,7 @@
 package games.tileworld;
 
 import openfl.display.BitmapData;
+import games.tileworld.world.Chunk;
 
 
 class Tile {

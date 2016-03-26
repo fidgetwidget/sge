@@ -3,7 +3,6 @@ package games.tileworld;
 import openfl.display.BitmapData;
 import sge.geom.base.Rectangle; // we just care about the x, y, width and height
 
-
 typedef TileObjectData = {
 
   var name :String;
@@ -35,6 +34,6 @@ typedef TileObjectData = {
   var tiles_wide :Int;
   var tiles_high :Int;
   // how the image breaks down to individual tiles
-  var tileFrames :Array<TileFrameData>;
+  var tileFrames :Array<BitmapData>;
 
 }

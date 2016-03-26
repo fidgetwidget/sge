@@ -205,4 +205,9 @@ class AABB
   private var _center :Vector;
   private var _halves :Vector;
 
+  public function toString() :String 
+  {
+    return 'AABB{ cx: ${_center.x}, cy: ${_center.y}, hw: ${_halves.x}, hh: ${_halves.y} }';
+  }
+
 }

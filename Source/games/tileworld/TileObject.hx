@@ -7,6 +7,11 @@ import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import sge.geom.base.Rectangle as BaseRectangle;
 
+import games.tileworld.world.Region;
+import games.tileworld.world.World;
+import games.tileworld.world.WorldCollisionHandler;
+
+
 class TileObject {
 
   
@@ -21,7 +26,7 @@ class TileObject {
   public var showForeground (get, set) :Bool;
   public var image (get, never) :BitmapData;
 
-  public var tileFrames :Array<TileFrameData>;
+  // public var tileFrames :Array<TileFrameData>;
   public var placed :Bool = false;
   
 
@@ -42,10 +47,10 @@ class TileObject {
 
     clone.data = this.data;
     clone.sourceImage = this.sourceImage;
-    for (tileFrame in tileFrames)
-    {
-      clone.tileFrames.push(tileFrame);
-    }
+    // for (tileFrame in tileFrames)
+    // {
+    //   clone.tileFrames.push(tileFrame);
+    // }
     clone._image = this._image;
     return clone;
   }

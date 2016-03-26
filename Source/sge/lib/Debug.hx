@@ -19,8 +19,8 @@ import openfl.ui.Keyboard;
 // 
 class Debug extends Sprite 
 {
-  var TEXT_COLOR  :UInt = 0x333333;
-  var BG_COLOR    :UInt = 0x33333333;
+  var TEXT_COLOR  :UInt = 0xffffff;
+  var BG_COLOR    :UInt = 0x55333333;
   var LAYOUT_PADDING :UInt = 20;
   var LINE_HEIGHT :UInt = 40;
 
@@ -59,7 +59,7 @@ class Debug extends Sprite
     mem.width = mem_width;
     
     layout_width = sw - (LAYOUT_PADDING * 2);
-    layout_height = (sh * 0.5) - LAYOUT_PADDING;
+    layout_height = (sh * 0.33) - LAYOUT_PADDING;
     layout_x = LAYOUT_PADDING;
     layout_y = sh - layout_height - LAYOUT_PADDING;
 

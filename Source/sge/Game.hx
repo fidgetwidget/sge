@@ -10,6 +10,8 @@ import sge.lib.Debug;
 import sge.lib.TimeRuler;
 import sge.scene.SceneManager;
 import sge.input.InputManager;
+import sge.tiles.*;
+import sge.world.*;
 
 
 class Game {
@@ -74,6 +76,10 @@ class Game {
   public function new () {
     
     Game.self = this;
+    var tile = new Tile();
+    var chunk = new Chunk();
+    var region = new Region();
+    var tileScene = new TileScene();
 
   }
 

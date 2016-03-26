@@ -1,4 +1,4 @@
-package games.tileworld;
+package games.tileworld.world;
 
 
 import sge.lib.Pool;

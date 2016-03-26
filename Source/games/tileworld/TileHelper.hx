@@ -41,7 +41,7 @@ class TileHelper {
 
   public static inline function setBitmapToTileType( bitmapData :BitmapData, tileType :UInt, neighbors :Int = 0, layer :UInt = LAYERS.BASE ) :Void
   {
-    var key = instance._collection.getFrameKey(tileType, neighbors, layer == LAYERS.BACKGROUND);
+    var key = instance._collection.getFrameKey(tileType, neighbors, layer);
     var data = instance._collection.getTileFrameById(tileType, key);
 
     bitmapData.copyPixels( data, instance.rect, instance.zero );
@@ -56,7 +56,7 @@ class TileHelper {
       if (tileType == 0 || (type > tileType && !ignoreTypePriority)) continue;
 
       var neighborVal = NEIGHBORS.getNeighborVal(sideIndex);
-      var key = instance._collection.getSideFrameKey(tileType, neighborVal, layer == LAYERS.BACKGROUND);
+      var key = instance._collection.getSideFrameKey(tileType, neighborVal, layer);
       var data = instance._collection.getTileFrameById(tileType, key);
 
       bitmapData.copyPixels( data, instance.rect, instance.zero, null, null, true);
@@ -79,8 +79,8 @@ class TileHelper {
     zero = new Point();
     blank = new BitmapData(CONST.TILE_WIDTH, CONST.TILE_HEIGHT, true, 0);
     _collection = new TileSetCollection();
-    TileSetImporter.DEFAULT_TILE_WIDTH = CONST.TILE_WIDTH;
-    TileSetImporter.DEFAULT_TILE_HEIGHT = CONST.TILE_HEIGHT;
+    TileSetImporter.TILE_WIDTH = CONST.TILE_WIDTH;
+    TileSetImporter.TILE_HEIGHT = CONST.TILE_HEIGHT;
     TileSetImporter.importTileSets('data/import', _collection);
   }
 

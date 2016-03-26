@@ -1,4 +1,9 @@
-package games.tileworld;
+package games.tileworld.world;
+
+import games.tileworld.CONST;
+import games.tileworld.LAYERS;
+import games.tileworld.TYPES;
+import games.tileworld.Tile;
 
 import openfl.Assets;
 import openfl.display.Bitmap;
@@ -70,7 +75,11 @@ class World {
       var regionBitmap = regionBitmaps.get(regionKey);
 
       // Update the region's image
-      if (region.dirty) regionBitmap.bitmapData = region.cache;
+      if (region.dirty) 
+      {
+        trace('region is dirty. ${region.x}|${region.y}');
+        regionBitmap.bitmapData = region.cache;
+      }
 
       regionBitmap.x = region.x - camera_x;
       regionBitmap.y = region.y - camera_y;

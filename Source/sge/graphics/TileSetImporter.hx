@@ -8,8 +8,8 @@ import openfl.geom.Rectangle;
 
 class TileSetImporter extends SpriteSheetImporter {
 
-  public static var DEFAULT_TILE_WIDTH :Int = 16;
-  public static var DEFAULT_TILE_HEIGHT :Int = 16;
+  public static var TILE_WIDTH :Int = 16;
+  public static var TILE_HEIGHT :Int = 16;
 
   static var neighborBitwiseMap :Array<Int>;
 
@@ -33,7 +33,7 @@ class TileSetImporter extends SpriteSheetImporter {
   {
     if (tileSets == null) tileSets = new TileSetCollection();
 
-    trace('Importing TileSetCollection via "${importPath}.json"');
+    // trace('Importing TileSetCollection via "${importPath}.json"');
 
     json = Assets.getText('${importPath}.json');
     importData = Json.parse(json);
@@ -53,7 +53,7 @@ class TileSetImporter extends SpriteSheetImporter {
 
     for (filename in importData.set)
     {
-      trace('Importing TileSet via "${filename}.json"');
+      // trace('Importing TileSet via "${filename}.json"');
 
       json = Assets.getText('${filename}.json');
       var spritesheet = importFrames(json);
@@ -102,8 +102,8 @@ class TileSetImporter extends SpriteSheetImporter {
     // Setup the Values
     x       = Std.parseInt(type.x);       x       = (invalidValue(x) ? 0 : x);
     y       = Std.parseInt(type.y);       y       = (invalidValue(y) ? 0 : y);
-    width   = Std.parseInt(type.width);   width   = (invalidValue(width) ? DEFAULT_TILE_WIDTH : width);
-    height  = Std.parseInt(type.height);  height  = (invalidValue(height) ? DEFAULT_TILE_HEIGHT : height);
+    width   = Std.parseInt(type.width);   width   = (invalidValue(width) ? TILE_WIDTH : width);
+    height  = Std.parseInt(type.height);  height  = (invalidValue(height) ? TILE_HEIGHT : height);
     cols    = Std.parseInt(type.cols);    cols    = (invalidValue(cols) ? Math.floor( spritesheet.sourceImage.width / width ) : cols);
 
     setBitwiseFrames( spritesheet, x, y, width, height, cols, suffix );
@@ -273,7 +273,7 @@ class TileSetImporter extends SpriteSheetImporter {
     var frameIndex = sheet.addFrame(x, y, width, height);
     sheet.setFrameName(frameIndex, frameName);
 
-    trace('addFrame $frameName $x $y $width $height');
+    // trace('addFrame $frameName $x $y $width $height');
   }
 
     

@@ -1,5 +1,25 @@
-package sge.collision.grid;
+package sge.collision;
 
+
+// 
+// A 4 directional type
+// 
+class DIRECTION
+{
+
+  public static var NONE        :Int = 0;
+
+  public static var UP          :Int = 1;
+  public static var RIGHT       :Int = 2;
+  public static var DOWN        :Int = 4;
+  public static var LEFT        :Int = 8;
+
+  public static var ALL         :Int = UP | RIGHT | DOWN | LEFT;
+  public static var HORIZONTAL  :Int = RIGHT | LEFT;
+  public static var VERTICAL    :Int = UP | DOWN; 
+  
+
+}
 
 // --------+--------+---------+-----
 //         |        |         |
@@ -41,21 +61,3 @@ package sge.collision.grid;
 //   +--+  |        |         |
 //         |        |         |
 // --------+--------+---------+----- 
-
-// 
-// A 4 directional type
-// 
-class GridDirections
-{
-
-  public static var NONE        :Int = 0x0;
-  public static var UP          :Int = 0x1;
-  public static var RIGHT       :Int = 0x2;
-  public static var DOWN        :Int = 0x4;
-  public static var LEFT        :Int = 0x8;
-
-  public static var HORIZONTAL  :Int = RIGHT | LEFT;
-  public static var VERTICAL    :Int = UP | DOWN; 
-  public static var ALL         :Int = UP | RIGHT | DOWN | LEFT;
-
-}

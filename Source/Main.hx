@@ -10,8 +10,8 @@ import samples.TestScene;
 import samples.brickBreaker.BrickBreaker;
 import samples.blockDrop.BlockDrop;
 import samples.snake.Snake;
-import games.tileworld.BaseScene;
-import games.tileworld.DebugRenderTiles;
+import games.tileworld2.BaseScene;
+import games.tileworld2.TileRenderTest;
 
 
 class Main extends Sprite {

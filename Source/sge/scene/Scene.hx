@@ -1,5 +1,6 @@
 package sge.scene;
 
+import openfl.display.DisplayObject;
 import openfl.display.Sprite;
 import sge.entity.EntityManager;
 import sge.entity.Entity;
@@ -47,14 +48,13 @@ class Scene
   // 
   // Constructor
   // 
-  public function new () {
-   
+  public function new () 
+  { 
     // super();
     id = Scene.getNextId();
     name = Type.getClassName(Type.getClass(this));
 
     _sprite = new Sprite();
-
   }
 
 
@@ -84,13 +84,12 @@ class Scene
 
   public function update() : Void 
   {
-
     handleInput();
 
     if (isPaused) return;
 
-    if (entities != null)  entities.update();
-
+    if (entities != null)  
+      entities.update();
   }
 
   private function handleInput() : Void {}
@@ -98,46 +97,52 @@ class Scene
 
   public function render() : Void 
   {
-
-    if (entities != null)  entities.debug_render( _sprite.graphics );
-
+    if (entities != null)  
+      entities.debug_render( _sprite.graphics );
   }
 
 
   // Entity Manager
   
-  public function addEntity ( entity :Entity ) : Void {
-
+  public function addEntity ( entity :Entity ) : Void 
+  {
     if (entities == null) trace('Scene[$name]:addEntity > Scene.entities is null'); return;
 
     entities.add( entity );
     entity.manager = entities;
-
-    _sprite.addChild( entity.sprite );
-
+    addSprite( entity.sprite );
   }
 
-  public function removeEntity ( entity :Entity ) : Void {
-
+  public function removeEntity ( entity :Entity ) : Void 
+  {
     if (entities == null) trace('Scene[$name]:addEntity > Scene.entities is null'); return;
 
     entities.remove( entity );
     entity.manager = null;
+    removeSprite( entity.sprite );
+  }
 
-    _sprite.removeChild( entity.sprite );
+  
+  // Sprite Managment
+  
+  public function addSprite ( sprite :DisplayObject ) :Void 
+  {
+    _sprite.addChild(sprite);
+  }
 
+  public function removeSprite ( sprite :DisplayObject ) :Void
+  {
+    _sprite.removeChild(sprite);
   }
 
   // 
   // Property Getters & Setters
   // 
 
-  private function get_isVisible () : Bool { 
-
+  private function get_isVisible () : Bool 
+  { 
     if ( manager.activeScene == this ) return true;
-
     return manager.occludedScenes.indexOf(this) != -1;
-
   }
 
 

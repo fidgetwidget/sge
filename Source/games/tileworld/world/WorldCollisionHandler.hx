@@ -1,10 +1,11 @@
-package games.tileworld;
+package games.tileworld.world;
 
 
 import openfl.geom.Rectangle;
+import sge.Game;
+import sge.Lib;
 import sge.collision.AABB;
 import sge.collision.Collision;
-import sge.Lib;
 
 
 class WorldCollisionHandler {
@@ -88,10 +89,12 @@ class WorldCollisionHandler {
 
   inline function testCollision_point_tile( x :Float, y :Float, tile :Tile ) :Bool
   {
+    Game.debug.setLabel('collision', '$x|$y ${tile.type}');
+
     if (tile.type == TYPES.NONE) return false;
 
-    return (x > tile.x && x < tile.x + CONST.TILE_WIDTH &&
-            y > tile.y && y < tile.y + CONST.TILE_HEIGHT);
+    return (x >= tile.worldX && x <= (tile.worldX + CONST.TILE_WIDTH) &&
+            y >= tile.worldY && y <= (tile.worldY + CONST.TILE_HEIGHT));
   }
 
 

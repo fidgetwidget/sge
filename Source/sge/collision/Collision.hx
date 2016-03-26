@@ -9,10 +9,57 @@ import sge.geom.Vector;
 @:publicFields
 class Collision
 {
+
+  public static var empty :Collision = new Collision();
+
+  public static function getSmallest( array :Array<Collision> ) :Collision
+  {
+    if (array.length == 0) return empty;
+
+    var smallest :Collision, collision :Collision;
+    smallest = new Collision();
+    
+    _xdir = 0;
+    _xval = 0.0;
+    _ydir = 0;
+    _yval = 0.0;
+    collision = array.pop();
+
+    smallest.px = collision.px;
+    smallest.py = collision.py;
+
+    while(array.length > 0)
+    {
+      collision = array.pop().smallest();
+      
+      if (collision.px != 0) 
+      {
+        _xval = Math.min(smallest.xval, collision.xval);
+        _xdir = (_xval == smallest.xval ? smallest.xdir : collision.xdir);
+        smallest.px = _xval * _xdir;
+      }
+      if (collision.py != 0) 
+      {
+        _yval = Math.min(smallest.yval, collision.yval);
+        _ydir = (_yval == smallest.yval ? smallest.ydir : collision.ydir);
+        smallest.py = _yval * _ydir;
+      }
+    }
+
+    return smallest;
+  }
+  static var _xval :Float;
+  static var _xdir :Int;
+  static var _yval :Float;
+  static var _ydir :Int;
+
+
   
   // penetration depth vector
   var px :Float;
   var py :Float;
+
+  var hit (get, never) :Bool;
 
   var xval (get, never) :Float;
   var xdir (get, never) :Int;
@@ -51,8 +98,8 @@ class Collision
 
   inline function clone() :Collision
   {
-    var _clone = new Collision();
-    return _clone.copy_from(this);
+    var c = new Collision();
+    return c.copy_from(this);
   }
 
 
@@ -63,51 +110,19 @@ class Collision
     return this;
   }
 
+
+  inline function get_hit() :Bool return !(px == 0 && py == 0);
+
   inline function get_xval() :Float return Math.abs(px);
   inline function get_xdir() :Int return px > 0 ? 1 : -1;
 
   inline function get_yval() :Float return Math.abs(py);
   inline function get_ydir() :Int return py > 0 ? 1 : -1;
 
+
   public function toString() :String 
   {
     return 'collision{ px: $px, py: $py }';
-  }
-
-
-  public static function getSmallest( array :Array<Collision> ) :Collision
-  {
-    var smallest = new Collision();
-    if (array.length == 0) return smallest;
-    
-    var xdir = 0;
-    var xval = 0.0;
-    var ydir = 0;
-    var yval = 0.0;
-    var collision = array.pop();
-
-    smallest.px = collision.px;
-    smallest.py = collision.py;
-
-    while(array.length > 0)
-    {
-      collision = array.pop().smallest();
-      
-      if (collision.px != 0) 
-      {
-        xval = Math.min(smallest.xval, collision.xval);
-        xdir = (xval == smallest.xval ? smallest.xdir : collision.xdir);
-        smallest.px = xval * xdir;
-      }
-      if (collision.py != 0) 
-      {
-        yval = Math.min(smallest.yval, collision.yval);
-        ydir = (yval == smallest.yval ? smallest.ydir : collision.ydir);
-        smallest.py = yval * ydir;
-      }
-    }
-
-    return smallest;
   }
 
 }

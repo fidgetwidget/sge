@@ -1,4 +1,4 @@
-package games.tileworld;
+package sge.world;
 
 
 import sge.lib.Pool;
@@ -12,4 +12,3 @@ class ChunkPool extends Pool<Chunk> {
   override function createNew() :Chunk  return new Chunk();
 
 }
-

@@ -1,9 +1,6 @@
-package sge.collision.grid;
+package sge.collision;
 
 import sge.Lib;
-import sge.collision.AABB;
-import sge.collision.Collision;
-
 
 
 class Grid
@@ -34,7 +31,7 @@ class Grid
       for (col in 0...cols)
       {
         // row, then col so the index will be 0...length
-        set(col, row, GridDirections.NONE);
+        set(col, row, DIRECTION.NONE);
       } // for col(x)
     } // for row(y)
 
@@ -95,7 +92,7 @@ class Grid
     var row = getRow(y);
     var dir = get( col, row );
 
-    if (dir == GridDirections.NONE) return false; // no direction, no collision
+    if (dir == DIRECTION.NONE) return false; // no direction, no collision
 
     var cx = this.x + (col * cellWidth) + halfWidth;
     var cy = this.y + (row * cellHeight) + halfHeight;
@@ -212,7 +209,7 @@ class Grid
 
     var dir = get( col, row );
 
-    if (dir == GridDirections.NONE) return false; // no direction, no collision
+    if (dir == DIRECTION.NONE) return false; // no direction, no collision
 
     var cx = this.x + (col * cellWidth) + halfWidth;
     var cy = this.y + (row * cellHeight) + halfHeight;
@@ -240,7 +237,7 @@ class Grid
 
     var dir = get( col, row );
 
-    if (dir == GridDirections.NONE) return false; // no direction, no collision
+    if (dir == DIRECTION.NONE) return false; // no direction, no collision
 
     var cx = this.x + (col * cellWidth) + halfWidth;
     var cy = this.y + (row * cellHeight) + halfHeight;
@@ -280,28 +277,28 @@ class Grid
         yy = y + (row * cellHeight);
 
         // if its solid, render rectangle
-        if (dir == GridDirections.ALL) {
+        if (dir == DIRECTION.ALL) {
           g.drawRect(xx, yy, cellWidth, cellHeight);
           continue;
         }
         
         // for each side, render a line
-        if (dir & GridDirections.UP > 0) {
+        if (dir & DIRECTION.UP > 0) {
           g.moveTo(xx,              yy);
           g.lineTo(xx + cellWidth, yy);
         }
 
-        if (dir & GridDirections.RIGHT > 0) {
+        if (dir & DIRECTION.RIGHT > 0) {
           g.moveTo(xx + cellWidth, yy);
           g.lineTo(xx + cellWidth, yy + cellHeight);
         }
 
-        if (dir & GridDirections.DOWN > 0) {
+        if (dir & DIRECTION.DOWN > 0) {
           g.moveTo(xx + cellWidth, yy + cellHeight);
           g.lineTo(xx,              yy + cellHeight);
         }
 
-        if (dir & GridDirections.LEFT > 0) {
+        if (dir & DIRECTION.LEFT > 0) {
           g.moveTo(xx,              yy + cellHeight);
           g.lineTo(xx,              yy);
         }
@@ -320,24 +317,24 @@ class Grid
   private function adjustCollision( dir :Int, collision :Collision ) :Void
   {
 
-    if (dir != GridDirections.ALL)
+    if (dir != DIRECTION.ALL)
     {
       // is LEFT or RIGHT present
-      if (dir & GridDirections.HORIZONTAL > 0) 
+      if (dir & DIRECTION.HORIZONTAL > 0) 
       {
         // check if its only Left, or only Right
-        if ((dir & GridDirections.LEFT == 0 && collision.px < 0) ||
-            (dir & GridDirections.RIGHT == 0 && collision.px > 0) )
+        if ((dir & DIRECTION.LEFT == 0 && collision.px < 0) ||
+            (dir & DIRECTION.RIGHT == 0 && collision.px > 0) )
           collision.px *= -1;
       }
       else collision.px = 0;
 
       // is UP or DOWN present
-      if (dir & GridDirections.VERTICAL > 0) 
+      if (dir & DIRECTION.VERTICAL > 0) 
       {
         // check if we need to reverse the direction
-        if ((dir & GridDirections.UP == 0 && collision.py < 0) ||
-            (dir & GridDirections.DOWN == 0 && collision.py > 0) )
+        if ((dir & DIRECTION.UP == 0 && collision.py < 0) ||
+            (dir & DIRECTION.DOWN == 0 && collision.py > 0) )
           collision.py *= -1; 
       }
       else collision.py = 0;

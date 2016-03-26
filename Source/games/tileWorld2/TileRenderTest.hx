@@ -1,4 +1,4 @@
-package games.tileworld;
+package games.tileworld2;
 
 import openfl.Assets;
 import openfl.display.Bitmap;
@@ -18,12 +18,16 @@ import sge.lib.MemUsage;
 import sge.collision.Collision;
 import sge.scene.Camera;
 import sge.scene.Scene;
-import sge.tiles.TILE_LAYERS;
 import sge.graphics.TileSetCollection;
 import sge.graphics.TileSetImporter;
+import sge.graphics.TileRenderer;
+import sge.tiles.TILE_VALUES;
+import sge.tiles.TILE_TYPES;
+import sge.tiles.TILE_LAYERS;
+import sge.tiles.NEIGHBORS;
 
 
-class DebugRenderTiles extends Scene
+class TileRenderTest extends Scene
 {
 
   var image : Sprite;
@@ -41,13 +45,17 @@ class DebugRenderTiles extends Scene
   var currentWorldY(get, never) :Float;
 
   var collection :TileSetCollection;
+  var renderer :TileRenderer;
 
   public function new() 
   { 
     super();
 
-    collection = new TileSetCollection();
-    TileSetImporter.importTileSets('data/import', collection);
+    renderer = new TileRenderer();
+    renderer.importTilesSets('data/import');
+
+    // collection = new TileSetCollection();
+    // TileSetImporter.importTileSets('data/import', collection);
 
     // TileHelper.init();
     camera = new Camera();
@@ -66,8 +74,6 @@ class DebugRenderTiles extends Scene
 
   override private function onReady() 
   {
-    trace('onReady');
-
     init_camera();
     image = new Sprite();
     _sprite.addChild(image);
@@ -75,16 +81,17 @@ class DebugRenderTiles extends Scene
     var x = 10;
     var y = 10;
 
-    trace('start loop');
-    for( id in collection.tileSetIds )
+    trace('start render');
+    for( id in renderer.collection.tileSetIds )
     {
+      
+      trace('tileSetId: $id');
 
-      if (id == TYPES.NONE) continue;
+      if (id == TILE_TYPES.NONE) continue;
 
       for ( n in 0...NEIGHBORS.SIDES )
       {
-        var key = collection.getFrameKey(id, n);
-        var data = collection.getTileFrameById(id, key, false);
+        var data = renderer.getBitmapData(id, n);
         if (data == null) continue;
         var bitmap = new Bitmap(data, PixelSnapping.ALWAYS, false);
 
@@ -92,15 +99,14 @@ class DebugRenderTiles extends Scene
         bitmap.y = y;
         image.addChild(bitmap);
 
-        x += CONST.TILE_WIDTH + 10; 
+        x += TILE_VALUES.TILE_WIDTH + 10; 
       }
 
-      x += CONST.TILE_WIDTH;
+      x += TILE_VALUES.TILE_WIDTH;
 
       for ( n in 0...NEIGHBORS.SIDES )
       {
-        var key = collection.getFrameKey(id, n, TILE_LAYERS.BACKGROUND);
-        var data = collection.getTileFrameById(id, key, false);
+        var data = renderer.getBitmapData(id, n, TILE_LAYERS.BACKGROUND);
         if (data == null) continue;
         var bitmap = new Bitmap(data, PixelSnapping.ALWAYS, false);
 
@@ -108,13 +114,14 @@ class DebugRenderTiles extends Scene
         bitmap.y = y;
         image.addChild(bitmap);
 
-        x += CONST.TILE_WIDTH + 10; 
+        x += TILE_VALUES.TILE_WIDTH + 10; 
       }
 
       x = 10;
-      y += CONST.TILE_HEIGHT + 10;
+      y += TILE_VALUES.TILE_HEIGHT + 10;
 
     }
+    trace('render complete');
 
     reset_camera();
   }
@@ -142,11 +149,11 @@ class DebugRenderTiles extends Scene
 
   override function handleInput() :Void
   {
-    input_dragMoveWithSpacebar();
+    input_dragMove();
 
-    input_resetCamera();  
+    input_cameraReset();  
 
-    input_scrollWithMousewheel();  
+    input_zoom();  
   }
 
 
@@ -169,7 +176,7 @@ class DebugRenderTiles extends Scene
   // Input
   // 
 
-  inline function input_dragMoveWithSpacebar() :Void
+  inline function input_dragMove() :Void
   {
     var input = Game.inputManager;
 
@@ -204,7 +211,7 @@ class DebugRenderTiles extends Scene
   }
 
 
-  inline function input_resetCamera() :Void
+  inline function input_cameraReset() :Void
   {
     var input = Game.inputManager;
 
@@ -212,7 +219,8 @@ class DebugRenderTiles extends Scene
   }
 
 
-  inline function input_scrollWithMousewheel() :Void
+  // zoom
+  inline function input_zoom() :Void
   {
     var input = Game.inputManager;
     var mouseDelta = input.mouse.mouseWheel.last;
