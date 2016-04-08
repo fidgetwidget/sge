@@ -144,18 +144,18 @@ class Chunk extends RenderTarget {
   inline function createTile(x :Int, y :Int) :Tile
   {
     // trace('Chunk:createTile( $x, $y )');
+        
+    t = TilePool.instance.get();
+    tx = x * TILE_VALUES.TILE_WIDTH;
+    ty = y * TILE_VALUES.TILE_HEIGHT;
 
-    var xx :Int, yy :Int;
-    var tile :Tile;
-    
-    tile = TilePool.instance.get();
-    xx = x * TILE_VALUES.TILE_WIDTH;
-    yy = y * TILE_VALUES.TILE_HEIGHT;
-
-    tile.init(xx, yy);
-    tile.z = z;
-    return tile;
+    t.init(tx, ty);
+    t.z = z;
+    return t;
   }
+  // var tx
+  // var ty
+  // var t
 
 
   inline function getTileIndex( x :Float, y :Float, parent :RenderTarget ) :Int
@@ -200,6 +200,9 @@ class Chunk extends RenderTarget {
   var ti :Int;
   var ix :Int;
   var iy :Int;
+  var tx :Int;
+  var ty :Int;
+  var t :Tile;
   var _target :Point;
   var _tileRect :Rectangle;
 

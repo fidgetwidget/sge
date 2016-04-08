@@ -17,6 +17,8 @@ class TileCollisionHandler {
   var HALF_TILE_WIDTH :Float;
   var HALF_TILE_HEIGHT :Float;
 
+  var debug :Bool = false;
+
   var dir :UInt;
 
 
@@ -94,7 +96,7 @@ class TileCollisionHandler {
 
         if (dir != 0)
         {
-          text += '($dir|$tx|$ty|$x|$y|$width|$height)';
+          if (debug) text += '($dir|$tx|$ty|$x|$y|$width|$height)';
 
           collision = collision_tile_bounds( dir, tx, ty, cx, cy, hw, hh, collision );
           if (collision != null)
@@ -108,7 +110,7 @@ class TileCollisionHandler {
       xx += Math.min( TILE_WIDTH, hw );
     }
 
-    Game.debug.setLabel('collisionBounds', text);
+    if (debug) Game.debug.setLabel('collisionBounds', text);
 
     return collisions;
   }
@@ -171,11 +173,13 @@ class TileCollisionHandler {
 
   inline function cleanCollision( dir :UInt, px :Float, py :Float, collision :Collision = null ) :Collision 
   {
-    var text = '{$px|$py}';
+    var text = '';
+    if (debug) text = '{$px|$py}';
     // Ensure tile direction allows for collision
     if (dir & DIRECTION.ALL == DIRECTION.ALL)
     {
-      text += 'ALL[$dir]';
+      if (debug) text += 'ALL[$dir]';
+
       // if (Math.abs(px) > HALF_TILE_WIDTH)
       // {
       //   px = px > 0 ? px - TILE_WIDTH : px + TILE_WIDTH;
@@ -190,7 +194,8 @@ class TileCollisionHandler {
     {
       if (dir & DIRECTION.VERTICAL == DIRECTION.VERTICAL)
       {
-        text += 'VERTICAL[$dir]';
+        if (debug) text += 'VERTICAL[$dir]';
+
         // up & down are fine as is, lets check for left or right
         if (dir & DIRECTION.LEFT != 0)
         {
@@ -213,7 +218,8 @@ class TileCollisionHandler {
       }
       else if (dir & DIRECTION.HORIZONTAL == DIRECTION.HORIZONTAL)
       {
-        text += 'HORIZONTAL[$dir]';
+        if (debug) text += 'HORIZONTAL[$dir]';
+
         // left & right are fine as is, lets check for up or down
         if (dir & DIRECTION.UP != 0)
         {
@@ -263,13 +269,19 @@ class TileCollisionHandler {
         {
            py = 0;
         }
+
       }
     }
 
     if (px == 0 && py == 0) 
     {
-      text += '(NONE)';
-      Game.debug.setLabel('cleanCollision', text);
+
+      if (debug)
+      {
+        text += '(NONE)';
+        Game.debug.setLabel('cleanCollision', text);  
+      }
+
       return null;
     }
 
@@ -278,8 +290,11 @@ class TileCollisionHandler {
     collision.px = px;
     collision.py = py;
 
-    text += '($px|$py)';
-    Game.debug.setLabel('cleanCollision', text);
+    if (debug)
+    {
+      text += '($px|$py)';
+      Game.debug.setLabel('cleanCollision', text);  
+    }
 
     return collision;
 

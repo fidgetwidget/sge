@@ -91,20 +91,13 @@ class Entity
   // 
   // Constructor
   // 
-  public function new () {
-
+  public function new () 
+  {
     _id   = Entity.getNextId();
     name  = Type.getClassName(Type.getClass(this));
-    init();
-
-  }
-
-  private function init () : Void {
-
     _transform    = new Transform();
     _motion       = new Motion();
     anchor        = new Vector();
-
   }
 
 
@@ -112,51 +105,43 @@ class Entity
   // Methods
   // 
   
-  public function createCollider ( shape :Shape ) :Void
-  {
-
-    collider = new Collider( transform, shape );
-
-  }
+  public function createCollider ( shape :Shape ) :Void collider = new Collider( transform, shape );
 
   
-  public function update() : Void {
-
+  public function update() : Void 
+  {
     _preUpdate();
 
     if (!isStatic) _updateMotion();
+
     if (hasSprite) _updateSprite();
 
-    _postUpdate();
-    
+    _postUpdate(); 
   }
 
-  private function _preUpdate () : Void { }
+  private function _preUpdate () : Void return;
 
-  private inline function _updateMotion () : Void {
-
-    motion.update( Game.delta, _transform );  
-    
-  }
+  private inline function _updateMotion () : Void motion.update( Game.delta, _transform );
   
 
-  private inline function _updateSprite () : Void {
-
+  private inline function _updateSprite () : Void 
+  {
     sprite.x = x - anchor.x;
     sprite.y = y - anchor.y;
-    sprite.rotation = angle;
-    
+    sprite.rotation = angle; 
   }
 
-  private function _postUpdate () : Void { }
+  private function _postUpdate () : Void return;
 
 
-  public function debug_render( graphics :Graphics ) :Void {
-
-    if (!hasCollider) { return; }
-
-    collider.debug_render(graphics);
-
+  public function debug_render( graphics :Graphics ) :Void 
+  {
+    if (hasCollider)
+      collider.debug_render(graphics);
+    else
+    {
+      graphics.drawCircle(x, y, 3);
+    }
   }
 
   // 

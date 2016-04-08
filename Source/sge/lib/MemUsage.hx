@@ -22,7 +22,7 @@ class MemUsage extends TextField
     selectable = false;
     mouseEnabled = false;
     defaultTextFormat = new TextFormat ("_sans", 12, color);
-    text = "";
+    text = '';
     
     addEventListener (Event.ENTER_FRAME, this_onEnterFrame);
   }
@@ -36,7 +36,7 @@ class MemUsage extends TextField
     if (currentUsage > peak) 
       peak = currentUsage;
     
-    text = "MEM: " + currentUsage + "MB/(" + peak + ")MB";
+    text = 'MEM: ${currentUsage}MB (${peak})MB';
 
   }
 

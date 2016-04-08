@@ -1,3 +1,4 @@
 /Export/*
 /Assets/**/*.pyxel
 /Source/_baseClass.hx
+/Source/games/tileworld_old

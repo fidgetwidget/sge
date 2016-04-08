@@ -6,6 +6,9 @@ import sge.geom.Vector;
 class AABB
 {
 
+  // 
+  // Static Properties
+  // 
   public static function make( centerX :Float, centerY :Float, halfWidth :Float, halfHeight :Float ) :AABB
   {
     var aabb :AABB = new AABB();
@@ -30,6 +33,9 @@ class AABB
     return aabb;
   }
   
+  // 
+  // Instance Object
+  // 
   public var x (get, set) :Float;
   public var y (get, set) :Float;
   public var width (get, set) :Float;
@@ -75,83 +81,17 @@ class AABB
 
   public function collision_point( x :Float, y :Float, ?collision :Collision ) :Bool
   {
-
-    if (!contains_point(x, y)) return false;
-    
-    var dx = x - centerX;
-    if (Math.abs(dx) < halfWidth)
-    {
-      var dy = y - centerY;
-      if (Math.abs(dy) < halfHeight)
-      {
-
-        if (collision == null) return true;
-
-        collision.px = dx;
-        collision.py = dy;
-
-        return true;
-
-      } 
-    }
-    return false;
-
+    return SimpleCollisions.aabb_point_collision( this, x, y, collision );
   }
 
   public function collision_aabb( aabb :AABB, ?collision :Collision ) :Bool
   {
-
-    var dx = aabb.centerX - centerX;
-    var px = (aabb.halfWidth + halfWidth) - Math.abs(dx);
-    if (px > 0)
-    {
-      var dy = aabb.centerY - centerY;
-      var py = (aabb.halfHeight + halfHeight) - Math.abs(dy);
-      if (py > 0)
-      {
-
-        if (collision == null) return true;
-
-        if (dx < 0) px *= -1; 
-        if (dy < 0) py *= -1;
-
-        collision.px = px;
-        collision.py = py;
-
-        return true;
-
-      } 
-    }
-    return false;
-
+    return SimpleCollisions.aabb_aabb_collision( this, aabb, collision );
   }
 
   public function collision_circle( x :Float, y :Float, radius :Float, ?collision :Collision ) :Bool
   {
-
-    var dx = x - centerX;
-    var px = (radius + halfWidth) - Math.abs(dx);
-    if (px > 0)
-    {
-      var dy = y - centerY;
-      var py = (radius + halfHeight) - Math.abs(dy);
-      if (py > 0)
-      {
-
-        if (collision == null) return true;
-
-        if (dx < 0) px *= -1; 
-        if (dy < 0) py *= -1;
-
-        collision.px = px;
-        collision.py = py;
-
-        return true;
-
-      } 
-    }
-    return false;
-
+    return SimpleCollisions.aabb_circle_collision( this, x, y, radius, collision );
   }
 
   

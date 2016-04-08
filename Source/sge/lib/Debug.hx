@@ -86,10 +86,11 @@ class Debug extends Sprite
 
   public function setLabel(label :String, value :String) :Void
   {
-    var text = !fields.exists(label) ? createLabel(label) :fields.get(label);
-    if (text.text == '$label: $value') return;
-    text.text = '$label: $value';
+    tempText = !fields.exists(label) ? createLabel(label) :fields.get(label);
+    if (tempText.text == '$label: $value') return;
+    tempText.text = '$label: $value';
   }
+  var tempText :TextField;
 
 
   inline function createLabel(name :String) :TextField
@@ -98,21 +99,22 @@ class Debug extends Sprite
     if (labelYPosition > layout_height - (fieldCount * LINE_HEIGHT + LAYOUT_PADDING))
       throw new openfl.errors.Error('Maximum Labels Reached - can\'t create label $name : currentLabelCount: $fieldCount');
 
-    var text = new TextField();
-    text.defaultTextFormat = textFormat;
-    text.autoSize = TextFieldAutoSize.LEFT;
-    text.selectable = false;
-    text.mouseEnabled = false;
-    text.x = LAYOUT_PADDING;
-    text.y = labelYPosition;
-    text.width = layout_width - LAYOUT_PADDING * 2;
+    textField = new TextField();
+    textField.defaultTextFormat = textFormat;
+    textField.autoSize = TextFieldAutoSize.LEFT;
+    textField.selectable = false;
+    textField.mouseEnabled = false;
+    textField.x = LAYOUT_PADDING;
+    textField.y = labelYPosition;
+    textField.width = layout_width - LAYOUT_PADDING * 2;
 
     fieldCount++;
-    fields.set(name, text);
-    addChild(text);
+    fields.set(name, textField);
+    addChild(textField);
 
-    return text;
+    return textField;
   }
+  var textField :TextField;
 
   // 
   // Maybe this should be updated by the Game Class instead?

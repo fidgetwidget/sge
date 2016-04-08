@@ -59,12 +59,7 @@ class Collider
   }
 
   // Render the shape
-  public function debug_render( graphics : Graphics ) :Void  
-  {
-
-    _shape.debug_render( graphics );
-
-  }
+  public function debug_render( graphics : Graphics ) :Void  _shape.debug_render( graphics );
 
   inline private function get_transform() :Transform return _transform;
 

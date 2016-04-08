@@ -1,0 +1,5 @@
+{
+  "set" : [
+    "data/tilesets/dirt", "data/tilesets/clay", "data/tilesets/stone"
+  ]
+}
