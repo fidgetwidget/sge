@@ -1,11 +1,12 @@
-package sge.collision.sat.shapes;
+package sge.collision.shapes;
 
 import openfl.display.Graphics;
 import sge.collision.AABB;
-import sge.collision.sat.ray.Ray;
-import sge.collision.sat.ray.RayCollision;
+import sge.collision.ray.Ray;
+import sge.collision.ray.RayCollision;
 import sge.geom.Matrix;
 import sge.geom.Vector;
+import sge.geom.VectorPool;
 
 class Polygon extends Shape
 {
@@ -27,13 +28,13 @@ class Polygon extends Shape
     _setSize();
   }
 
-  private function _setSize() :Void
+  function _setSize() :Void
   {
 
-    var minX :Float = Math.NEGATIVE_INFINITY;
-    var minY :Float = Math.NEGATIVE_INFINITY;
-    var maxX :Float = Math.POSITIVE_INFINITY;
-    var maxY :Float = Math.POSITIVE_INFINITY;
+    var minX :Float = Math.POSITIVE_INFINITY;
+    var minY :Float = Math.POSITIVE_INFINITY;
+    var maxX :Float = Math.NEGATIVE_INFINITY;
+    var maxY :Float = Math.NEGATIVE_INFINITY;
 
     for (v in _vertices)
     {
@@ -72,19 +73,24 @@ class Polygon extends Shape
   // NOTE: does not set a linestyle
   override public function debug_render( graphics :Graphics ) : Void
   {
-    var verts = get_transformedVertices();
-    var end = verts[verts.length - 1];
-    graphics.moveTo(end.x, end.y);
+    // graphics.drawRect(x, y, _bounds.width, _bounds.height);
 
-    for (vert in verts)
+    verts = get_transformedVertices();
+
+    // move to the last vertice
+    vert = verts[verts.length - 1];
+    graphics.moveTo(vert.x, vert.y);
+
+    // draw the lines between each verticie
+    for (v in verts)
     {
-      graphics.lineTo(vert.x, vert.y);
+      graphics.lineTo(v.x, v.y);
     }
   }
  
   override public function destroy() : Void 
   {
-    var _count : Int = _vertices.length;
+    _count = _vertices.length;
 
     for(i in 0 ... _count) {
         _vertices[i] = null;
@@ -95,55 +101,54 @@ class Polygon extends Shape
     _transformMatrix = null;
     _bounds = null;
   }
+  // var _count :Int
 
+  var _count :Int;
+  var _testMatrix :Matrix;
+  var len :Int;
+  var vert :Vector;
+  var verts :Array<Vector>;
 
-  override private function get_width() :Float return 0;
-  override private function get_height() :Float return 0;
+  var _vertices :Array<Vector>;
+  var _transformedVertices :Array<Vector>;
+  var _transformMatrix :Matrix;
 
-
-  inline private function get_vertices() :Array<Vector> return _vertices;
-  inline private function get_transformedVertices() :Array<Vector>
+  inline function get_vertices() :Array<Vector> return _vertices;
+  inline function get_transformedVertices() :Array<Vector>
   {
-    
-    var _temp = transform.matrix.clone();
-    _temp.translate(offsetX, offsetY);
+    _testMatrix = transform.matrix.clone();
+    _testMatrix.translate(offsetX, offsetY);
 
-    if( !_transformMatrix.equal(_temp) ) {
+    if( _transformMatrix == null || ! _transformMatrix.equal(_testMatrix) ) {
 
-      _transformedVertices = new Array<Vector>();
-      _transformMatrix = _temp;
+      _transformedVertices = Lib.emptyArray(_transformedVertices);
+      _transformMatrix = _testMatrix;
 
-      var len : Int = _vertices.length;
-
+      len = _vertices.length;
       for (i in 0...len) {
-
-        var vert = _vertices[i].clone().transform( _transformMatrix );
+        vert = _vertices[i].transform( _transformMatrix, true );
         _transformedVertices.push( vert );
-
       }
     }
 
     return _transformedVertices;
   }
 
-  private var _vertices :Array<Vector>;
-  private var _transformedVertices :Array<Vector>;
-  private var _transformMatrix :Matrix;
 
-
-  // Static Methods
-  
+  // 
+  // Static Factory Methods
+  // 
   static public function create( x :Float, y :Float, sides :Int, radius :Float ) :Polygon
   {
-    var rotation:Float = (Math.PI * 2) / sides;
-    var angle:Float;
-    var vector:Vector;
-    var vertices:Array<Vector> = new Array();
+    var rotation :Float = (Math.PI * 2) / sides;
+    var angle :Float;
+    var vector :Vector;
+    var vertices :Array<Vector> = [];
 
     for(i in 0 ... sides) {
 
       angle = (i * rotation) + ((Math.PI - rotation) * 0.5);
-      vector = new Vector();
+      vector = VectorPool.instance.get();
       vector.x = Math.cos(angle) * radius;
       vector.y = Math.sin(angle) * radius;
       vertices.push(vector);
@@ -159,17 +164,17 @@ class Polygon extends Shape
 
     if (centered) {
 
-      vertices.push( new Vector(-width / 2, -height / 2) );
-      vertices.push( new Vector( width / 2, -height / 2) );
-      vertices.push( new Vector( width / 2,  height / 2) );
-      vertices.push( new Vector(-width / 2,  height / 2) );
+      vertices.push( Polygon.getVector(-width * 0.5, -height * 0.5) );
+      vertices.push( Polygon.getVector( width * 0.5, -height * 0.5) );
+      vertices.push( Polygon.getVector( width * 0.5,  height * 0.5) );
+      vertices.push( Polygon.getVector(-width * 0.5,  height * 0.5) );
 
     } else {
 
-      vertices.push( new Vector(0, 0) );
-      vertices.push( new Vector(width, 0) );
-      vertices.push( new Vector(width, height) );
-      vertices.push( new Vector(0, height) );
+      vertices.push( Polygon.getVector(0, 0) );
+      vertices.push( Polygon.getVector(width, 0) );
+      vertices.push( Polygon.getVector(width, height) );
+      vertices.push( Polygon.getVector(0, height) );
 
     }
 
@@ -184,6 +189,17 @@ class Polygon extends Shape
   static public function triangle( x :Float, y :Float, radius :Float ) :Polygon 
   {
     return create(x, y, 3, radius);
+  }
+
+  // 
+  // Stitc Helper
+  // 
+  static inline function getVector( x :Float = 0.0, y :Float = 0.0 ) :Vector 
+  {
+    var v = VectorPool.instance.get();
+    v.x = x;
+    v.y = y;
+    return v;
   }
 
 

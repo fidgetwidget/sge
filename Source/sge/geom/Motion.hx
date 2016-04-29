@@ -3,6 +3,8 @@ package sge.geom;
 
 class Motion
 {
+
+  var MIN_VELOCITY = 0.1;
   
   public var velocity :Vector;
   public var acceleration :Vector;
@@ -14,6 +16,8 @@ class Motion
   public var accelerationY (get, set) :Float;
   public var dragX (get, set) :Float;
   public var dragY (get, set) :Float;
+
+  public var linearDrag :Float;
 
   public var angularVelocity :Float;
   public var angularAcceleration :Float;
@@ -30,6 +34,7 @@ class Motion
     velocity = new Vector();
     acceleration = new Vector();
     drag = new Vector();
+    linearDrag = 0;
     
     angularVelocity = 0;
     angularAcceleration = 0;
@@ -73,13 +78,19 @@ class Motion
     {
       vel += accel * elapsed;
     }
-    else if (drag != 0)
+    else if (drag != 0 || linearDrag != 0)
     {
-      drag = drag * elapsed;
+      if (linearDrag != 0)
+        drag = Math.abs(vel) * linearDrag * elapsed;
+      else
+        drag = drag * elapsed;
 
       if (vel - drag > 0)       { vel -= drag; }
       else if (vel + drag < 0)  { vel += drag; }
       else                      { vel = 0; }
+
+      if (Math.abs(vel) < MIN_VELOCITY) vel = 0;
+
     }
 
     if (vel != 0 && limit != 0)
@@ -108,8 +119,10 @@ class Motion
 
   inline private function get_inMotion() :Bool
   {
-    return velocity.x != 0 && velocity.y != 0 && angularVelocity != 0;
+    return 
+      acceleration.x != 0 || acceleration.y != 0 ||
+      velocity.x != 0 || velocity.y != 0 || 
+      angularAcceleration != 0 || angularVelocity != 0;
   }
-
 
 }

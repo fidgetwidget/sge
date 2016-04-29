@@ -1,123 +1,92 @@
 package sge;
 
 import openfl.display.BitmapData;
-import openfl.display.PNGEncoderOptions;
-import openfl.geom.Rectangle;
-import openfl.utils.ByteArray;
-import openfl.utils.SystemPath;
 import haxe.io.Path;
+import sge.lib.ArrayHelper;
+import sge.lib.MathHelper;
+import sge.lib.PathHelper;
+import sge.lib.Remainder;
 import sge.lib.SystemDirectory;
 
-#if (sys)
-import sys.io.FileOutput;
-import sys.io.File;
-import sys.FileSystem;
-#end
-
-#if (!lime_legacy && sys)
-import lime.system.System as SystemPath;
-#else
-import openfl.utils.SystemPath;
-#end
 
 // 
-// Math Extension:
+// Helper functions
 // 
+// TODO: utilize the lib classes to provide the functions used here
+// 
+
+@:publicFields
 class Lib
 {
 
+  // --------------------------------------------------
+  //    Math
+  // --------------------------------------------------
+
+  static inline function distanceBetween( x1 :Float, y1 :Float, x2 :Float, y2 :Float ) :Float
+  {
+    return MathHelper.distanceBetween(x1, y1, x2, y2);
+  }
+
+
+  // --------------------------------------------------
+  //    Remainder
+  // --------------------------------------------------
+
   // Get the Divisor result because % gives the Dividend
-  
-  public static inline function remainder_int( a :Int, n :Int ) :Int
+  static inline function remainder_int( a :Int, n :Int ) :Int
   {
-    return a - (n * Math.floor(a/n));
+    return Remainder.int(a, n);
   }
 
-  public static inline function remainder_float( a :Float, n :Float ) :Float
+  static inline function remainder_float( a :Float, n :Float ) :Float
   {
-    return a - (n * Math.floor(a/n));
+    return Remainder.float(a, n);
   }
 
 
-  public static inline function random_int( min :Int, max :Int ) :Int
+  // --------------------------------------------------
+  //    Random
+  // --------------------------------------------------
+
+  static inline function random_int ( min :Int, max :Int ) : Int
   {
     return min + Math.floor((max - min + 1) * Math.random());
   }
 
-  public static inline function random_fromArray<T>( array :Array<T> ) :Null<T>
+  static inline function random_fromArray<T> ( array :Array<T> ) : Null<T>
   {
     return (array != null && array.length > 0) ? array[ random_int(0, array.length - 1) ] : null;
   }
 
-  public static inline function shuffleArray<T>( array :Array<T> ) :Array<T>
+
+  // --------------------------------------------------
+  //    Array
+  // --------------------------------------------------
+
+  static inline function shuffleArray<T> ( array :Array<T> ) : Array<T>
   {
-
-    if (array!=null) {
-
-      for (i in 0...array.length) {
-
-        var j = random_int(0, array.length - 1);
-        var a = array[i];
-        var b = array[j];
-
-        array[i] = b;
-        array[j] = a;
-
-      }
-
-    }
-
-    return array;
-
+    return ArrayHelper.shuffleArray(array);
   }
 
-#if (sys)
-  public static function saveImage( image :BitmapData, file :String, directory :Int = 1 ) :Void
+  static inline function emptyArray<T> ( array :Array<T>) : Array<T>
+  {
+    return ArrayHelper.emptyArray(array);
+  }
+
+
+  // --------------------------------------------------
+  //    Path
+  // --------------------------------------------------
+
+  static function saveImage( image :BitmapData, file :String, directory :Int = SystemDirectory.APPLICATION_STORAGE ) :Void
   { 
-
-    var path :Path = Lib.buildPath(file, directory);
-    var options :PNGEncoderOptions = new PNGEncoderOptions();
-    var png :ByteArray = image.encode(image.rect, options);
-    var fo :FileOutput = File.write(""+path, true);
-
-    try 
-    {
-      fo.writeBytes(png, 0, png.length );
-      trace('save path done: $path');
-    } 
-    catch (e:Dynamic) 
-    {
-      trace('Error writing file $path: $e');
-    }
-
-    fo.close();
-
+    return PathHelper.saveImage( image, file, directory );
   }
 
-  static function buildPath( file :String, directory :Int = 1 ) :Path
+  static function buildPath( file :String, directory :Int = SystemDirectory.APPLICATION_STORAGE ) :Path
   {
-    var baseDir;
-    var path;
-
-    // Build Path
-    switch (directory)
-    {
-      case SystemDirectory.DESKTOP:
-        baseDir = SystemPath.desktopDirectory;
-
-      case SystemDirectory.USER:
-        baseDir = SystemPath.userDirectory;
-
-      default:
-        baseDir = SystemPath.applicationStorageDirectory;
-    }
-    path = new Path(baseDir+file);
-
-    // If we need to, create the directory
-    if (!FileSystem.exists(path.dir)) FileSystem.createDirectory(path.dir);
-
-    return path;
-
+    return PathHelper.buildPath( file, directory );
   }
-#end
+
 }

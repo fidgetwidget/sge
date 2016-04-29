@@ -30,7 +30,7 @@ class MouseInput
     stage.addEventListener( MouseEvent.MOUSE_WHEEL, onMouseWheelChange );
     stage.addEventListener( MouseEvent.MOUSE_MOVE,   onMouseMove );
 
-#if !js
+#if (!js)
     stage.addEventListener( MouseEvent.MIDDLE_MOUSE_DOWN, onMiddleMouseDown );
     stage.addEventListener( MouseEvent.MIDDLE_MOUSE_UP,   onMiddleMouseUp );
     stage.addEventListener( MouseEvent.RIGHT_MOUSE_DOWN,  onRightMouseDown );

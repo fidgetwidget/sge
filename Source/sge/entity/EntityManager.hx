@@ -1,8 +1,10 @@
 package sge.entity;
 
+
 import openfl.display.Graphics;
 import sge.geom.Vector;
-import sge.collision.sat.Collider;
+import sge.collision.Collider;
+import sge.collision.COLLISION_GROUP;
 import sge.scene.Scene;
 
 // NOTE: maybe this should be an interface instead?
@@ -24,6 +26,8 @@ class EntityManager {
 
   public var scene : Scene;
 
+  public var count (get, never) :Int;
+
 
   // 
   // Constructor
@@ -35,20 +39,24 @@ class EntityManager {
   // Methods
   // 
 
-  public function add ( entity : Entity ) : Void {}
+  public function add ( entity : Entity, collisionGroup : Int = COLLISION_GROUP.NONE ) : Void {}
 
   public function remove ( entity : Entity ) : Void {}
 
   public function touch ( entity : Entity ) : Void {}
 
-  public function update () : Void {}
+  public function update ( updateAll :Bool = false, onUpdate : Entity -> Void = null, beforeUpdate :Bool = false ) : Void {}
 
-  public function near ( vector : Vector ) : Array<Entity> { return null; }
+  public function near ( entity : Entity, entities :Array<Entity> = null ) : Array<Entity> { return entities; }
+
+  public function nearPosition ( position : Dynamic, entities :Array<Entity> = null ) : Array<Entity> { return entities; }
 
   public function collision ( collider : Collider, hits : Array<Entity> ) : Bool { return false; }
   
 
+  public function debug_render ( graphics :Graphics ) :Void { return; }
 
-  public function debug_render ( graphics :Graphics ) { return false; }
+
+  public function get_count() :Int return 0;
 
 }

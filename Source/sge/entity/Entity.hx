@@ -2,8 +2,8 @@ package sge.entity;
 
 import openfl.display.DisplayObject;
 import openfl.display.Graphics;
-import sge.collision.sat.Collider;
-import sge.collision.sat.shapes.Shape;
+import sge.collision.Collider;
+import sge.collision.shapes.Shape;
 import sge.entity.EntityManager;
 import sge.geom.Motion;
 import sge.geom.Transform;
@@ -59,6 +59,8 @@ class Entity
   public var dragX (get, set) :Float;
 
   public var dragY (get, set) :Float;
+
+  public var linearDrag (get, set) :Float;
 
   public var angularVelocity (get, set) :Float;
 
@@ -136,6 +138,8 @@ class Entity
 
   public function debug_render( graphics :Graphics ) :Void 
   {
+    if (hasSprite) _updateSprite();
+
     if (hasCollider)
       collider.debug_render(graphics);
     else
@@ -183,6 +187,10 @@ class Entity
   inline private function set_dragX( x :Float ) :Float  return _motion.dragX = x;
   inline private function get_dragY() :Float  return _motion.dragY;
   inline private function set_dragY( y :Float ) :Float  return _motion.dragY = y;
+  
+  inline private function get_linearDrag() :Float  return _motion.linearDrag;
+  inline private function set_linearDrag( val :Float ) :Float  return _motion.linearDrag = val;
+
   // angularVelocity
   inline private function get_angularVelocity() :Float  return _motion.angularVelocity;
   inline private function set_angularVelocity( value :Float ) :Float  return _motion.angularVelocity = value;

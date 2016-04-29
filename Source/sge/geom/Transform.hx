@@ -21,9 +21,9 @@ class Transform
 
   public function new()
   {
-    _position = new Vector();
+    _position = new Vector(0, 0);
     _rotationRadians = 0;
-    _scale = new Vector();
+    _scale = new Vector(1, 1);
   }
 
 

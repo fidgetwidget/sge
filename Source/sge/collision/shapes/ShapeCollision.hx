@@ -1,4 +1,4 @@
-package sge.collision.sat.shapes;
+package sge.collision.shapes;
 
 import sge.geom.Vector;
 
@@ -17,7 +17,12 @@ class ShapeCollision
   var overlap    :Float = 0; // the overlap amount
 
   var separation :Vector;    // a vector that when subtracted to shape 1 will separate it from shape 2
+  var separationX (get, set) :Float;
+  var separationY (get, set) :Float;
+
   var unitVector :Vector;    // unit vector on the axis of the collision (the normal of the face that was collided with)
+  var unitVectorX (get, set) :Float;
+  var unitVectorY (get, set) :Float;
 
   var other      :ShapeCollision;
 
@@ -68,5 +73,19 @@ class ShapeCollision
     return this;
 
   } //copy_from
+
+  inline function get_separationX() :Float return separation.x;
+  inline function set_separationX( value :Float ) :Float return separation.x = value;
+
+  inline function get_separationY() :Float return separation.y;
+  inline function set_separationY( value :Float ) :Float return separation.y = value;
+
+  inline function get_unitVectorX() :Float return unitVector.x;
+  inline function set_unitVectorX( value :Float ) :Float return unitVector.x = value;
+
+  inline function get_unitVectorY() :Float return unitVector.y;
+  inline function set_unitVectorY( value :Float ) :Float return unitVector.y = value;
+
+  public inline function toString() return 'ShapeCollision[overlap: $overlap separation: ${separation.x}|${separation.y} unitVector: ${unitVector.x}|${unitVector.y}]';
 
 }

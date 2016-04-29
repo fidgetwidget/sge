@@ -121,6 +121,8 @@ class BaseScene extends TileScene
   {
     // trace('tileworld.BaseScene.onReady');
 
+    input = Game.inputManager;
+
     init_camera();
     // trace('init_camera done');
 
@@ -480,7 +482,6 @@ class BaseScene extends TileScene
 
   inline function input_toggleState() :Void
   {
-    input = Game.inputManager;
 
     if (input.keyboard.isPressed( Keyboard.O ))
     {
@@ -502,8 +503,6 @@ class BaseScene extends TileScene
 
   inline function input_dragMoveWithSpacebar() :Void
   {
-    input = Game.inputManager;
-
     // Test if we are starting a drag action
     if (input.keyboard.isDown( Keyboard.SPACE ) && input.mouse.isDown() &&
       ( input.keyboard.isPressed( Keyboard.SPACE ) || input.mouse.isPressed() ))
@@ -537,7 +536,6 @@ class BaseScene extends TileScene
 
   inline function input_scrollWithMousewheel() :Void
   {
-    input = Game.inputManager;
     mouseDelta = input.mouse.mouseWheel.last;
 
     if (mouseDelta != 0)
@@ -565,8 +563,6 @@ class BaseScene extends TileScene
 
   inline function input_changeCurrentTile() :Void
   {
-    input = Game.inputManager;
-
     if (input.keyboard.isPressed(Keyboard.SLASH))
     {
       currentTileTypeIndex++;
@@ -575,7 +571,6 @@ class BaseScene extends TileScene
 
   inline function input_shiftDragFillRect() :Void
   {
-    input = Game.inputManager;
     xx = currentWorldX;
     yy = currentWorldY;
     layer = 0;
@@ -612,7 +607,6 @@ class BaseScene extends TileScene
 
   inline function input_placeTile() :Void
   {
-    input = Game.inputManager;
     layer = 0;
 
     if (input.mouse.isDown() && !mouseDragging)
@@ -628,15 +622,11 @@ class BaseScene extends TileScene
 
   inline function input_resetCamera() :Void
   {
-    input = Game.inputManager;
-
     if (input.keyboard.isPressed( Keyboard.R )) reset_camera();
   }
 
   inline function input_toggleBoundsRender() :Void
   {
-    input = Game.inputManager;
-
     if (input.keyboard.isPressed( Keyboard.B )) 
     {
       renderBounds = !renderBounds;
@@ -645,8 +635,6 @@ class BaseScene extends TileScene
 
   inline function input_toggleCollisionRender() :Void
   {
-    input = Game.inputManager;
-
     if (input.keyboard.isPressed( Keyboard.C )) 
     {
       renderCollisions = !renderCollisions;
@@ -657,8 +645,6 @@ class BaseScene extends TileScene
 
   inline function input_adjustCursor() :Void
   {
-    input = Game.inputManager;
-
     if (input.keyboard.isDown(Keyboard.SPACE) || mouseDragging)
     {
       openfl.ui.Mouse.show();
@@ -681,8 +667,6 @@ class BaseScene extends TileScene
 
   inline function input_adjustDrawSize() :Void
   {
-    input = Game.inputManager;
-
     if (input.keyboard.isPressed(Keyboard.LEFTBRACKET))
     {
       drawSize--;

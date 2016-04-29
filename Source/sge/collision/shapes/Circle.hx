@@ -1,9 +1,9 @@
-package sge.collision.sat.shapes;
+package sge.collision.shapes;
 
 import openfl.display.Graphics;
 import sge.collision.AABB;
-import sge.collision.sat.ray.Ray;
-import sge.collision.sat.ray.RayCollision;
+import sge.collision.ray.Ray;
+import sge.collision.ray.RayCollision;
 import sge.geom.Vector;
 
 
@@ -36,7 +36,7 @@ class Circle extends Shape
     var c1 = flip ? circle : this;
     var c2 = flip ? this : circle;
 
-    return SAT2D.testCircleVsCircle( c1, c2, collision );
+    return SAT2D.testCircleVsCircle( this, circle, collision, flip );
   }
 
   override public function testPolygon( polygon :Polygon, ?collision :ShapeCollision, flip :Bool = false ) : ShapeCollision 
@@ -52,13 +52,17 @@ class Circle extends Shape
 
   override public function debug_render( graphics :Graphics ) : Void
   {
+    graphics.moveTo(x, y);
     graphics.drawCircle(x, y, radius);
   }
 
 
-  inline private function get_radius() :Float return _radius;
+  inline function get_radius() :Float return _radius;
 
-  inline private function get_transformedRadius() :Float return _radius * transform.scale.x;
+  inline function get_transformedRadius() :Float return _radius * (transform != null ? transform.scaleX : 1);
+
+  override function get_width()  :Float return radius * 2;
+  override function get_height() :Float return radius * 2;
 
 
   private var _radius :Float = 0;

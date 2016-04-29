@@ -106,7 +106,11 @@ class Scene
   
   public function addEntity ( entity :Entity ) : Void 
   {
-    if (entities == null) trace('Scene[$name]:addEntity > Scene.entities is null'); return;
+    if (entities == null) 
+    { 
+      trace('Scene[$name]:addEntity > Scene.entities is null'); 
+      return;
+    }
 
     entities.add( entity );
     entity.manager = entities;
@@ -115,7 +119,11 @@ class Scene
 
   public function removeEntity ( entity :Entity ) : Void 
   {
-    if (entities == null) trace('Scene[$name]:addEntity > Scene.entities is null'); return;
+    if (entities == null) 
+    {
+      trace('Scene[$name]:addEntity > Scene.entities is null'); 
+      return;
+    }
 
     entities.remove( entity );
     entity.manager = null;

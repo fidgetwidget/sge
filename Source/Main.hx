@@ -7,6 +7,7 @@ import openfl.events.Event;
 import openfl.Lib;
 import sge.Game;
 import samples.TestScene;
+import samples.basic.BasicScene;
 import samples.brickBreaker.BrickBreaker;
 import samples.blockDrop.BlockDrop;
 import samples.snake.Snake;
@@ -47,7 +48,7 @@ class Main extends Sprite {
     // 
     // Push your first scene (loading scene?)
     // 
-    Game.sceneManager.pushScene( new BaseScene() );
+    Game.sceneManager.pushScene( new BasicScene() );
   }
 
   

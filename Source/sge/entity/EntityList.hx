@@ -1,6 +1,11 @@
 package sge.entity;
 
 
+import openfl.display.Graphics;
+import sge.collision.Collider;
+import sge.collision.COLLISION_GROUP;
+
+
 class EntityList extends EntityManager {
 
 
@@ -8,43 +13,86 @@ class EntityList extends EntityManager {
   {
     super();
     _entitiesById = new Map();
+    _entityIdGroupMap = new Map();
     _idsToUpdate = new Array();
   }
 
 
-  override public function add ( entity : Entity ) : Void
+  override public function add ( entity : Entity, collisionGroup : Int = COLLISION_GROUP.NONE ) : Void
   {
-    _entitiesById.add( entity.id, entity );
+    _entitiesById.set( entity.id, entity );
+    
+    if (collisionGroup != COLLISION_GROUP.NONE) _entityIdGroupMap.set( entity.id, collisionGroup );
+
+    _count++;
   }
 
 
   override public function remove ( entity : Entity ) : Void
   {
-    _entitiesById.remove( entity.id );
+    _entityIdGroupMap.remove( entity.id );
+
+    if ( _entitiesById.remove( entity.id ) ) _count--; 
   }
 
   override public function touch ( entity : Entity ) : Void
   {
-    _idsToUpdate.push( entity );
+    _idsToUpdate.push( entity.id );
   }
 
 
-  override public function update () : Void
+  override public function update ( updateAll :Bool = false, onUpdate : Entity -> Void = null, beforeUpdate :Bool = false ) : Void
   {
-    var id : Int;
-    var entity : Entity;
+    if (updateAll)
+    {
+      for (entity in _entitiesById)
+      {
+        if (onUpdate != null && beforeUpdate)
+          onUpdate(entity);
+
+        entity.update();
+
+        if (onUpdate != null && !beforeUpdate)
+          onUpdate(entity);
+      }
+
+      while (_idsToUpdate.length > 0) _idsToUpdate.pop();
+
+      return;
+    }
 
     while (_idsToUpdate.length > 0)
     {
       id = _idsToUpdate.pop();
       entity = _entitiesById.get(id);
+
+      if (onUpdate != null && beforeUpdate)
+        onUpdate(entity);
+
       entity.update();
+
+      if (onUpdate != null && !beforeUpdate)
+        onUpdate(entity);
     }
 
   }
+  var id :Int;
+  var entity :Entity;
 
+
+  override public function debug_render ( graphics :Graphics ) :Void
+  {
+    for (e in _entitiesById)
+    {
+      e.debug_render( graphics );
+    }
+  }
 
   private var _entitiesById : Map<Int, Entity>;
+  private var _entityIdGroupMap :Map<Int, Int>;
   private var _idsToUpdate : Array<Int>;
+  private var _count :Int = 0;
+
+  override function get_count() :Int return _count;
   
 }

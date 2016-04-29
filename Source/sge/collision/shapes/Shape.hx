@@ -1,9 +1,9 @@
-package sge.collision.sat.shapes;
+package sge.collision.shapes;
 
 import openfl.display.Graphics;
 import sge.collision.AABB;
-import sge.collision.sat.ray.Ray;
-import sge.collision.sat.ray.RayCollision;
+import sge.collision.ray.Ray;
+import sge.collision.ray.RayCollision;
 import sge.geom.Transform;
 import sge.geom.Vector;
 

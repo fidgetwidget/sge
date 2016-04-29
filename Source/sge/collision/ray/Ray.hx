@@ -1,4 +1,4 @@
-package sge.collision.sat.ray;
+package sge.collision.ray;
 
 import sge.geom.Vector;
 

@@ -75,8 +75,8 @@ class Matrix  {
 
   public function makeTranslation( x:Float, y:Float ) :Matrix 
   {
-    tx = x;
-    ty = y;
+    this.tx = x;
+    this.ty = y;
     return this;
   }
 
@@ -114,12 +114,12 @@ class Matrix  {
 
   public function equal( other :Matrix ) :Bool
   {
-    return (other.a  == a  &&
-            other.b  == b  &&
-            other.c  == c  &&
-            other.d  == d  &&
-            other.tx == tx &&
-            other.ty == ty);
+    return (other.a  == this.a  &&
+            other.b  == this.b  &&
+            other.c  == this.c  &&
+            other.d  == this.d  &&
+            other.tx == this.tx &&
+            other.ty == this.ty);
   }
 
   public function clone() :Matrix

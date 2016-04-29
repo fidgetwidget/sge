@@ -36,22 +36,30 @@ class Vector {
         
     public inline function clone() : Vector 
     {
-      return new Vector(x, y);
+      v = VectorPool.instance.get();
+      
+      v.x = this.x;
+      v.y = this.y;
+
+      return v;
     } 
 
-    public function transform( matrix :Matrix ) :Vector 
+    public function transform( matrix :Matrix, clone :Bool = false ) : Vector 
     {
-      var v :Vector = clone();
+      if (clone)
+        v = this.clone();
+      else
+        v = this;
 
-      v.x = x*matrix.a + y*matrix.c + matrix.tx;
-      v.y = x*matrix.b + y*matrix.d + matrix.ty;
+      v.x = (v.x * matrix.a) + (v.y * matrix.c) + matrix.tx;
+      v.y = (v.x * matrix.b) + (v.y * matrix.d) + matrix.ty;
 
       return v;
     } 
 
     public function normalize() : Vector 
     {
-      var l :Float = length;
+      l = length;
 
       if (l == 0) 
       {
@@ -123,6 +131,9 @@ class Vector {
     }
 
     public function toString() : String  return 'Vector[x: $x, y: $y]';
+
+    var v :Vector;
+    var l :Float;
 
 
     // We only store the x and y values of the vector, 
