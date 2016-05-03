@@ -21,8 +21,8 @@ import sge.lib.StringArrayPool;
 class EntityGrid extends EntityManager {
 
 
-  public var CELL_WIDTH   :Int = 256;
-  public var CELL_HEIGHT  :Int = 256;
+  public var CELL_WIDTH   :Int = 124;
+  public var CELL_HEIGHT  :Int = 124;
 
 
   public function new ()
@@ -80,7 +80,8 @@ class EntityGrid extends EntityManager {
   // Tell the manager to update the entity
   override public function touch ( entity :Entity ) : Void
   {
-    _idsToUpdate.push( entity.id );
+    if (_idsToUpdate.indexOf( entity.id ) < 0)
+      _idsToUpdate.push( entity.id );
   }
 
 
@@ -361,8 +362,6 @@ class EntityGrid extends EntityManager {
     trh = tr.hashString();
     blh = bl.hashString();
     brh = br.hashString();
-
-    Game.debug.setLabel('colliderCoords', ' $tlh $trh $blh $brh ');
 
     // we check if its already there to prevent adding multiple of the same
     if (coords.indexOf(tlh) < 0) coords.push(tlh);

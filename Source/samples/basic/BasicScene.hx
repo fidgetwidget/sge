@@ -23,6 +23,7 @@ class BasicScene extends Scene
   var _shapes :Array<Entity>;
   var _near   :Array<Entity>;
   var _entitiesToRemove :Array<Entity>;
+  var _entitiesToUpdate :Array<Entity>;
   var _ent :Entity;
   
   
@@ -36,6 +37,7 @@ class BasicScene extends Scene
     _shapes = [];
     _near = [];
     _entitiesToRemove = [];
+    _entitiesToUpdate = [];
 
   }
 
@@ -58,73 +60,114 @@ class BasicScene extends Scene
     player.y = 50;
     addEntity(player);
 
-    trace('entity count: ${entities.count}');
-
   }
 
 
   override public function update() :Void
   {
+    Game.debug.setLabel('entities', '${entities.count}');
 
-    removeEntities();
+    Game.ruler.startMarker('update_input', 0x333333);
     
+    update_handleInput();
+
+    Game.ruler.endMarker('update_input');
+
+
+    Game.ruler.startMarker('update_entities', 0xff0000);
+
+    entities.update( true, entities_update );
+
+    Game.ruler.endMarker('update_entities');
+
+
+    Game.ruler.startMarker('player_collision', 0x0000ff);
+
+    update_testPlayerCollisions();
+
+    Game.ruler.endMarker('player_collision');
+
+    update_removeEntities();
+
+  }
+
+
+  override public function render() :Void
+  {
+
+    _sprite.graphics.clear();
+    _sprite.graphics.lineStyle( 1, 0x0000ff );
+
+    entities.debug_render( _sprite.graphics );
+
+    _sprite.graphics.beginFill(0x000078);
+    player.debug_render(_sprite.graphics);
+    _sprite.graphics.endFill();
+
+    // _near should still be populated from the update()
+    _sprite.graphics.beginFill( 0x33ff0000 );
+    for (e in _near)
+    {
+      e.debug_render(_sprite.graphics);
+    }
+    _sprite.graphics.endFill();
+    
+  }
+
+
+  function entities_update(e :Entity) {
+
+    if (! e.motion.inMotion) return;
+
+    Lib.emptyArray(_near);
+    _near = entities.near( e, _near );
+
+    for (ent in _near)
+    {
+      if (ent == e || ent == player || e == player) continue;
+
+      // trace('collision test');
+      if (ent.hasCollider && e.hasCollider && ent.collider.test(e.collider))
+      {
+        dx = ent.collider.collision.separation.x;
+        dy = ent.collider.collision.separation.y;
+
+        ent.x -= dx * 0.5;
+        ent.y -= dy * 0.5;
+        ent.motion.velocityX = dx * -0.1;
+        ent.motion.velocityY = dy * -0.1;
+
+        e.x += dx * 0.5;
+        e.y += dy * 0.5; 
+        e.motion.velocityX = dx * 0.1;
+        e.motion.velocityY = dy * 0.1;
+      }
+
+    }
+
+    // test if the entitiy has hit the outside
+    if (e.collider.left < 0 || e.collider.right > sceneWidth ||
+        e.collider.top < 0  || e.collider.bottom > sceneHeight)
+    {
+      _entitiesToRemove.push(e);
+    }
+
+  }
+
+
+  inline function update_handleInput()
+  {
     player.handleInput();
 
     if ( input.mouse.isDown() )
     {
       addShape(input.mouse.mouseX, input.mouse.mouseY);
     }
+  }
 
-    if (player.motion.inMotion)
-      entities.touch(player);
 
-    entities.update( true, function (e :Entity) {
-
-      var dx :Float;
-      var dy :Float;
-
-      Lib.emptyArray(_near);
-      _near = entities.near( e, _near );
-
-      // trace('entity update callback');
-
-      for (ent in _near)
-      {
-        // trace('near loop');
-
-        if (ent == e || ent == player || e == player)
-        {
-          continue;
-        }
-
-        // trace('collision test');
-        if (ent.hasCollider && e.hasCollider && ent.collider.test(e.collider))
-        {
-          dx = ent.collider.collision.separation.x;
-          dy = ent.collider.collision.separation.y;
-
-          ent.x -= dx * 0.5;
-          ent.y -= dy * 0.5;
-          ent.motion.velocityX = dx * -0.1;
-          ent.motion.velocityY = dy * -0.1;
-
-          e.x += dx * 0.5;
-          e.y += dy * 0.5; 
-          e.motion.velocityX = dx * 0.1;
-          e.motion.velocityY = dy * 0.1;
-        }
-
-      }
-
-      if (e.collider.left < 0 || e.collider.right > sceneWidth ||
-          e.collider.top < 0  || e.collider.bottom > sceneHeight)
-      {
-        _entitiesToRemove.push(e);
-      }
-
-    });
-
-    // test for and resolve player and other collisions
+  inline function update_testPlayerCollisions()
+  {
     Lib.emptyArray(_near);
     _near = entities.near( player, _near );
 
@@ -140,8 +183,6 @@ class BasicScene extends Scene
         e.y += vy;
         e.motion.velocityX += SAT2D.vec_normalize(vl, vx) * Math.abs(player.velocityX * 0.25);
         e.motion.velocityY += SAT2D.vec_normalize(vl, vy) * Math.abs(player.velocityY * 0.25);
-
-        // entities.touch(e);
       }
     }
 
@@ -161,33 +202,10 @@ class BasicScene extends Scene
 
       player.velocityY *= -1;
     }
-
-  }
-  var vl :Float;
-  var vx :Float; 
-  var vy :Float;
-
-
-  override public function render() :Void
-  {
-
-    _sprite.graphics.clear();
-    _sprite.graphics.lineStyle( 1, 0x0000ff );
-
-    entities.debug_render( _sprite.graphics );
-
-    // _near should still be populated from the update()
-    _sprite.graphics.beginFill( 0x33ff0000 );
-    for (e in _near)
-    {
-      e.debug_render(_sprite.graphics);
-    }
-    _sprite.graphics.endFill();
-    
   }
 
 
-  inline function removeEntities()
+  inline function update_removeEntities()
   {
     while (_entitiesToRemove.length > 0)
     {
@@ -196,6 +214,8 @@ class BasicScene extends Scene
       entities.remove(_ent);
     }
   }
+
+
 
   inline function addShape( x :Float, y :Float )
   {
@@ -221,5 +241,10 @@ class BasicScene extends Scene
 
   var shapeTypes = [ 'box', 'ball' ];
   var shapeType :String;
+  var dx :Float;
+  var dy :Float;
+  var vl :Float;
+  var vx :Float; 
+  var vy :Float;
 
 }

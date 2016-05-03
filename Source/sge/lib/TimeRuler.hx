@@ -23,6 +23,11 @@ class TimeRuler extends Shape
   var prevStarTime :Float = 0;
   var delta :Float = 0;
   var samples :Int = 0;
+  var sampleStartTime :Float;
+  var prevSampleStartTime :Float;
+  var sampleSetCount :Int = 30;
+  var sampleSetDelta :Float = 0.0;
+  var delatOverSampleSet :Float = 0.0;
   var markers :Array<Marker>;
   var markerNameMap :Map<String, Int>;
   var mid :Int;
@@ -38,7 +43,7 @@ class TimeRuler extends Shape
     markers = new Array();
     markerNameMap = new Map();
 
-    frameSpan = (1 / 60) * 1000;
+    frameSpan = (1 / 30) * 1000;
     max_width = sw - 40;
     position = new Point();
     position.x = 20;
@@ -64,36 +69,26 @@ class TimeRuler extends Shape
     
     sampleMarkers();
     samples++;
-    if (samples >= 30)
+    if (samples >= sampleSetCount)
     {
-      // delta *= (1/3);
-      drawMarkers();
+      prevSampleStartTime = sampleStartTime;
+      sampleStartTime = now;
+      sampleSetDelta = sampleStartTime - prevSampleStartTime;
+
+      delatOverSampleSet = delta / sampleSetCount;
+
       samples = 0;
       delta = 0;
+      writeLog();
     }
+
+    drawMarkers();
 
   }
 
   inline function get_now() :Float
   {
-#if (sys)
-    
-    return haxe.Timer.stamp() / 1000;
-    // return Sys.cpuTime() / 1000;
-
-#elseif (flash || nme || openfl)
-
-    return flash.Lib.getTimer() / 1000;
-
-#elseif lime
-
-    return lime.system.System.getTimer() / 1000;
-
-#else
-    
-    return haxe.Timer.stamp() / 1000;
-
-#end
+    return haxe.Timer.stamp() * 1000;
   }
 
 
@@ -128,6 +123,8 @@ class TimeRuler extends Shape
       min: 0,
       max: 0,
       avg: 0,
+      minOffset: 0,
+      maxOffset: 0,
       offset: 0,
       samples: 0,
     };
@@ -147,8 +144,10 @@ class TimeRuler extends Shape
       if (m.samples == 0)
       {
         m.min = d;
-        m.min = d;
+        m.max = d;
         m.avg = d;
+        m.minOffset = dl;
+        m.maxOffset = dl;
         m.offset = dl;
         m.samples++;
       }
@@ -156,9 +155,12 @@ class TimeRuler extends Shape
       {
 
         m.min = Math.min(m.min, d);
-        m.min = Math.max(m.max, d);
+        m.max = Math.max(m.max, d);
         m.avg += d;
         m.avg *= 0.5;
+
+        m.minOffset = Math.min(m.minOffset, dl);
+        m.maxOffset = Math.max(m.maxOffset, dl);
         m.offset += dl;
         m.offset *= 0.5;
         m.samples++;
@@ -168,25 +170,40 @@ class TimeRuler extends Shape
       {
         m.samples = 1;
         m.avg = (m.min + m.max) * 0.5;
+        m.offset = (m.minOffset + m.maxOffset) * 0.5;
       }
     }
   }
   var d :Float;
   var dl :Float;
 
+  function writeLog() :Void
+  {
+    n = max_width / frameSpan; // the width of the container over the length of a frame
+    l = 0;
+    w = sampleSetDelta * n;
+
+    for (m in markers)
+    {
+      trace('[${m.id}] start: ${m.startTime} frame: ${frameStartTime} offset: ${m.startTime - frameStartTime}ms avg: ${m.avg}ms');
+    }
+  }
+  var t :Float;
+
 
   function drawMarkers() :Void
   {
     n = max_width / frameSpan;
     l = 0;
-    w = delta * n;
-
-    // trace('delta:$delta frameSpan:$frameSpan : ${(delta / frameSpan) * max_width} | ${w}');
+    w = Math.max(delatOverSampleSet * n, 1);
 
     g.beginFill(0x00ff00);
     g.drawRect(position.x, position.y, w, 3);
     g.endFill();
     
+
+    n = max_width / delatOverSampleSet;
+
     for(m in markers)
     {
       g.beginFill(m.color);
@@ -194,7 +211,7 @@ class TimeRuler extends Shape
       l = m.offset * n;
       w = Math.max( m.avg * n, 1);
 
-      g.drawRect(position.x + l, position.y, w, BAR_HEIGHT);
+      g.drawRect(position.x - l, position.y, w, BAR_HEIGHT);
 
       g.endFill();
     }
@@ -220,8 +237,11 @@ typedef Marker = {
   var min :Float;
   var max :Float;
   var avg :Float;
-
+  
+  var minOffset :Float;
+  var maxOffset :Float;
   var offset :Float;
+
 
   var samples :Int;
 
