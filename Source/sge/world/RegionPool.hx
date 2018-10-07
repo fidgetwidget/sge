@@ -1,7 +1,7 @@
 package sge.world;
 
 
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class RegionPool extends Pool<Region> {

@@ -7,7 +7,7 @@ import openfl.display.Sprite;
 import openfl.display.Stage;
 import openfl.events.Event;
 import sge.lib.Debug;
-import sge.lib.TimeRuler;
+import sge.lib.timeruler.Ruler;
 import sge.scene.SceneManager;
 import sge.input.InputManager;
 import sge.tiles.*;
@@ -30,7 +30,7 @@ class Game {
 
   public static var isPaused (get, never) : Bool;
 
-  public static var ruler (get, never) : TimeRuler;
+  public static var ruler (get, never) : Ruler;
 
   public static var debug (get, never) : Debug;
 
@@ -106,7 +106,7 @@ class Game {
     root.stage.addChild(debugSprite);
 
     _debug = new Debug();
-    _ruler = new TimeRuler();
+    _ruler = new Ruler();
     
     debugSprite.addChild(_debug);
     debugSprite.addChild(_ruler);
@@ -187,7 +187,7 @@ class Game {
 
   private var _isPaused :Bool;
 
-  private var _ruler :TimeRuler;
+  private var _ruler :Ruler;
 
   private var _debug :Debug;
 
@@ -211,7 +211,7 @@ class Game {
   
   static inline private function get_isPaused() :Bool return Game.self != null ? Game.self._isPaused : true;
 
-  static inline private function get_ruler() :TimeRuler return Game.self != null ? Game.self._ruler : null;
+  static inline private function get_ruler() :Ruler return Game.self != null ? Game.self._ruler : null;
 
   static inline private function get_debug() :Debug return Game.self != null ? Game.self._debug : null;
  

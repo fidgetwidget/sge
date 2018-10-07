@@ -1,7 +1,7 @@
 package sge.graphics;
 
 
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 class AnimationDataPool extends Pool<AnimationData> {
 

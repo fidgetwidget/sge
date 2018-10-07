@@ -1,7 +1,7 @@
 package games.tileworld_old.world;
 
 
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class ChunkPool extends Pool<Chunk> {

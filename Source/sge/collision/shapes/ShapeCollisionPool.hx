@@ -1,7 +1,7 @@
 package sge.collision.shapes;
 
 
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class ShapeCollisionPool extends Pool<ShapeCollision> {

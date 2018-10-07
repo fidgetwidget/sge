@@ -48,7 +48,7 @@ class Main extends Sprite {
     // 
     // Push your first scene (loading scene?)
     // 
-    Game.sceneManager.pushScene( new BasicScene() );
+    Game.sceneManager.pushScene( new BaseScene() );
   }
 
   

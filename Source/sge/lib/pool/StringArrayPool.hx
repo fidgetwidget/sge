@@ -1,7 +1,7 @@
-package sge.lib;
+package sge.lib.pool;
 
 
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class StringArrayPool extends Pool<Array<String>> {

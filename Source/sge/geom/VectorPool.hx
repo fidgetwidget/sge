@@ -1,7 +1,7 @@
 package sge.geom;
 
 import openfl.geom.Point;
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class VectorPool extends Pool<Vector> {

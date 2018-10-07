@@ -1,4 +1,4 @@
-package sge.lib;
+package sge.lib.timeruler;
 
 import openfl.events.Event;
 import openfl.display.Graphics;
@@ -9,7 +9,7 @@ import sge.Game;
 // 
 // Draw the length of time a given "marker" is taking across the whole frame length
 // 
-class TimeRuler extends Shape
+class Ruler extends Shape
 {
 
   var ALMOST_ZERO :Float = 0.000001;
@@ -83,7 +83,6 @@ class TimeRuler extends Shape
     }
 
     drawMarkers();
-
   }
 
   inline function get_now() :Float
@@ -110,11 +109,11 @@ class TimeRuler extends Shape
   }
 
 
-  function makeMarker(name :String, color :UInt ) :Void
+  function makeMarker(name :String, color :UInt) :Void
   {
     mid = markers.length;
 
-    var marker :Marker = {
+    var marker:Marker = {
       id: mid,
       startTime: 0.0,
       endTime: 0.0,
@@ -225,24 +224,3 @@ class TimeRuler extends Shape
 
 }
 
-typedef Marker = {
-
-  var id :UInt;
-  var color :UInt;
-
-  var startTime :Float;
-  var endTime :Float;
-  var elapsedTime :Float;
-
-  var min :Float;
-  var max :Float;
-  var avg :Float;
-  
-  var minOffset :Float;
-  var maxOffset :Float;
-  var offset :Float;
-
-
-  var samples :Int;
-
-}

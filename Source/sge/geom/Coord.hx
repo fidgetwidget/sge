@@ -22,11 +22,7 @@ class Coord
     this.y = y;
   }
 
-  inline public function hashCode() :Int 
-  {
-    // trace('$x|$y:${Coord.getHashInt(x, y)}'); 
-    return Coord.getHashInt(x, y);
-  }
+  inline public function hashCode() :Int return Coord.getHashInt(x, y);
 
   inline public function hashString() :String return Coord.getHashString(x, y);
 

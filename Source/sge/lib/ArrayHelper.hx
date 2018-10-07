@@ -1,5 +1,6 @@
 package sge.lib;
 
+import sge.lib.pool.Pool;
 
 @:publicFields
 class ArrayHelper

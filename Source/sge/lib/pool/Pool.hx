@@ -1,10 +1,5 @@
-package sge.lib;
+package sge.lib.pool;
 
-// 
-// A simple helper to get the divisor remainder 
-// because haxe's implimentation of the modulos opporator 
-// returns the dividend
-// 
 class Pool<T>
 {
   /**

@@ -1,7 +1,7 @@
 package sge.geom;
 
 import openfl.geom.Rectangle;
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class RectanglePool extends Pool<Rectangle> {

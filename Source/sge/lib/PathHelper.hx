@@ -4,7 +4,6 @@ import openfl.display.BitmapData;
 import openfl.display.PNGEncoderOptions;
 import openfl.geom.Rectangle;
 import openfl.utils.ByteArray;
-import openfl.utils.SystemPath;
 import haxe.io.Path;
 import sge.lib.SystemDirectory;
 
@@ -16,8 +15,6 @@ import sys.FileSystem;
 
 #if (!lime_legacy && sys)
 import lime.system.System as SystemPath;
-#else
-import openfl.utils.SystemPath;
 #end
 
 @:publicFields

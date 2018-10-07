@@ -52,7 +52,7 @@ class TileRenderTest extends Scene
     super();
 
     renderer = new TileRenderer();
-    renderer.importTilesSets('data/import');
+    renderer.importTilesSets('data/tilesets');
 
     // collection = new TileSetCollection();
     // TileSetImporter.importTileSets('data/import', collection);

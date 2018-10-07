@@ -135,6 +135,10 @@ class Scene
   
   public function addSprite ( sprite :DisplayObject ) :Void 
   {
+    if (sprite == null) {
+      trace('Scene[$name]:addSprite > sprite is null.');
+      return;
+    }
     _sprite.addChild(sprite);
   }
 

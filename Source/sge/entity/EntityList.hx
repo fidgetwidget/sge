@@ -3,7 +3,6 @@ package sge.entity;
 
 import openfl.display.Graphics;
 import sge.collision.Collider;
-import sge.collision.COLLISION_GROUP;
 
 
 class EntityList extends EntityManager {
@@ -18,11 +17,11 @@ class EntityList extends EntityManager {
   }
 
 
-  override public function add ( entity : Entity, collisionGroup : Int = COLLISION_GROUP.NONE ) : Void
+  override public function add ( entity :Entity, group :String = "" ) : Void
   {
     _entitiesById.set( entity.id, entity );
     
-    if (collisionGroup != COLLISION_GROUP.NONE) _entityIdGroupMap.set( entity.id, collisionGroup );
+    if (group != "") _entityIdGroupMap.set( entity.id, group );
 
     _count++;
   }
@@ -89,7 +88,7 @@ class EntityList extends EntityManager {
   }
 
   private var _entitiesById : Map<Int, Entity>;
-  private var _entityIdGroupMap :Map<Int, Int>;
+  private var _entityIdGroupMap :Map<Int, String>;
   private var _idsToUpdate : Array<Int>;
   private var _count :Int = 0;
 

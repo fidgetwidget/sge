@@ -1,7 +1,7 @@
 package sge.tiles;
 
 
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class TilePool extends Pool<Tile> {

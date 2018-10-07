@@ -5,7 +5,7 @@ import sge.geom.Matrix;
 
 // 
 // 2D Vector
-// 
+// x, y 
 // has math for:
 // - transformation
 // - normalization

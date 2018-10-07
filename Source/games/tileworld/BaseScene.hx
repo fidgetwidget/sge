@@ -188,6 +188,16 @@ class BaseScene extends TileScene
       input_dragMoveWithSpacebar();
       
       input_shiftDragFillRect();
+
+      input_changeCurrentTile();
+
+      input_placeTile();
+
+      input_currentTile();
+
+      input_adjustDrawSize();
+
+      input_scrollWithMousewheel(); 
     }
 
     if (currentState == STATE_PLAY)
@@ -195,20 +205,9 @@ class BaseScene extends TileScene
       // play only input
     }
 
-    input_changeCurrentTile();
-
-    input_placeTile();
-
-    input_currentTile();
-
     input_adjustCursor();
 
-    input_adjustDrawSize();
-
-
     input_toggleState();
-
-    input_scrollWithMousewheel();
 
     input_resetCamera();
 

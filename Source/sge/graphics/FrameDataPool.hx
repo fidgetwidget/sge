@@ -2,7 +2,7 @@ package sge.graphics;
 
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
-import sge.lib.Pool;
+import sge.lib.pool.Pool;
 
 
 class FrameDataPool extends Pool<FrameData> {

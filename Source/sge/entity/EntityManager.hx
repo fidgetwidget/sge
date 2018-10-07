@@ -4,7 +4,6 @@ package sge.entity;
 import openfl.display.Graphics;
 import sge.geom.Vector;
 import sge.collision.Collider;
-import sge.collision.COLLISION_GROUP;
 import sge.scene.Scene;
 
 // NOTE: maybe this should be an interface instead?
@@ -39,7 +38,7 @@ class EntityManager {
   // Methods
   // 
 
-  public function add ( entity : Entity, collisionGroup : Int = COLLISION_GROUP.NONE ) : Void {}
+  public function add ( entity : Entity, group :String = "" ) : Void {}
 
   public function remove ( entity : Entity ) : Void {}
 

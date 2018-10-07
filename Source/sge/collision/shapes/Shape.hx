@@ -44,7 +44,11 @@ class Shape
 
   public function debug_render( graphics :Graphics ) :Void return;
 
-  public function destroy() :Void offset = null;
+  public function destroy() :Void 
+  {
+    _offset = null;
+    _bounds = null;
+  }
 
 
   inline private function get_offset() :Vector return _offset;

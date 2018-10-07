@@ -10,51 +10,6 @@ import sge.geom.Vector;
 class Collision
 {
 
-  public static var empty :Collision = new Collision();
-
-  public static function getSmallest( array :Array<Collision> ) :Collision
-  {
-    if (array.length == 0) return empty;
-
-    var smallest :Collision, collision :Collision;
-    smallest = new Collision();
-    
-    _xdir = 0;
-    _xval = 0.0;
-    _ydir = 0;
-    _yval = 0.0;
-    collision = array.pop();
-
-    smallest.px = collision.px;
-    smallest.py = collision.py;
-
-    while(array.length > 0)
-    {
-      collision = array.pop().smallest();
-      
-      if (collision.px != 0) 
-      {
-        _xval = Math.min(smallest.xval, collision.xval);
-        _xdir = (_xval == smallest.xval ? smallest.xdir : collision.xdir);
-        smallest.px = _xval * _xdir;
-      }
-      if (collision.py != 0) 
-      {
-        _yval = Math.min(smallest.yval, collision.yval);
-        _ydir = (_yval == smallest.yval ? smallest.ydir : collision.ydir);
-        smallest.py = _yval * _ydir;
-      }
-    }
-
-    return smallest;
-  }
-  static var _xval :Float;
-  static var _xdir :Int;
-  static var _yval :Float;
-  static var _ydir :Int;
-
-
-  
   // penetration depth vector
   var px :Float;
   var py :Float;
@@ -124,5 +79,53 @@ class Collision
   {
     return 'collision{ px: $px, py: $py }';
   }
+
+
+  // --------------------------------------------------
+  // Static Methods & Properties
+  // --------------------------------------------------
+
+  public static var empty :Collision = new Collision();
+
+  public static function getSmallest( all :Array<Collision>, result :Collision = null ) :Collision
+  {
+    if (all.length == 0) return empty;
+    var col :Collision;
+
+    if (result == null) result = new Collision();
+    
+    _xdir = 0;
+    _xval = 0.0;
+    _ydir = 0;
+    _yval = 0.0;
+    col = all.pop();
+
+    result.px = col.px;
+    result.py = col.py;
+
+    while(all.length > 0)
+    {
+      col = all.pop().smallest();
+      
+      if (col.px != 0) 
+      {
+        _xval = Math.min(result.xval, col.xval);
+        _xdir = (_xval == result.xval ? result.xdir : col.xdir);
+        result.px = _xval * _xdir;
+      }
+      if (col.py != 0) 
+      {
+        _yval = Math.min(result.yval, col.yval);
+        _ydir = (_yval == result.yval ? result.ydir : col.ydir);
+        result.py = _yval * _ydir;
+      }
+    }
+
+    return result;
+  }
+  static var _xval :Float;
+  static var _xdir :Int;
+  static var _yval :Float;
+  static var _ydir :Int;
 
 }

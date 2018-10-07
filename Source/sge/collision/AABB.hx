@@ -7,35 +7,6 @@ class AABB
 {
 
   // 
-  // Static Properties
-  // 
-  public static function make( centerX :Float, centerY :Float, halfWidth :Float, halfHeight :Float ) :AABB
-  {
-    var aabb :AABB = new AABB();
-
-    aabb.centerX = centerX;
-    aabb.centerY = centerY;
-    aabb.halfWidth = halfWidth;
-    aabb.halfHeight = halfHeight;
-
-    return aabb;
-  }
-
-  public static function make_rect( x :Float, y :Float, width :Float, height: Float ) :AABB
-  {
-    var aabb :AABB = new AABB();
-
-    aabb.halfWidth = width * 0.5;
-    aabb.halfHeight = height * 0.5;
-    aabb.x = x;
-    aabb.y = y;
-
-    return aabb;
-  }
-  
-  // 
-  // Instance Object
-  // 
   public var x (get, set) :Float;
   public var y (get, set) :Float;
   public var width (get, set) :Float;
@@ -148,6 +119,35 @@ class AABB
   public function toString() :String 
   {
     return 'AABB{ cx: ${_center.x}, cy: ${_center.y}, hw: ${_halves.x}, hh: ${_halves.y} }';
+  }
+
+
+  // --------------------------------------------------
+  // Static Properties
+  // --------------------------------------------------
+  
+  public static function make( centerX :Float, centerY :Float, halfWidth :Float, halfHeight :Float ) :AABB
+  {
+    var aabb :AABB = new AABB();
+
+    aabb.centerX = centerX;
+    aabb.centerY = centerY;
+    aabb.halfWidth = halfWidth;
+    aabb.halfHeight = halfHeight;
+
+    return aabb;
+  }
+
+  public static function make_rect( x :Float, y :Float, width :Float, height: Float ) :AABB
+  {
+    var aabb :AABB = new AABB();
+
+    aabb.halfWidth = width * 0.5;
+    aabb.halfHeight = height * 0.5;
+    aabb.x = x;
+    aabb.y = y;
+
+    return aabb;
   }
 
 }

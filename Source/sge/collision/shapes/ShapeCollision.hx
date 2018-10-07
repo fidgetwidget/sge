@@ -1,6 +1,7 @@
 package sge.collision.shapes;
 
 import sge.geom.Vector;
+import sge.geom.VectorPool;
 
 
 // 
@@ -11,29 +12,38 @@ class ShapeCollision
 {
 
 
-  var shape1     :Shape;
-  var shape2     :Shape;
+  var shape1 :Shape;
+  var shape2 :Shape;
 
-  var overlap    :Float = 0; // the overlap amount
+  var overlap :Float = 0; // the overlap amount
 
-  var separation :Vector;    // a vector that when subtracted to shape 1 will separate it from shape 2
+  var separation :Vector; // a vector that when subtracted to shape 1 will separate it from shape 2
   var separationX (get, set) :Float;
   var separationY (get, set) :Float;
 
-  var unitVector :Vector;    // unit vector on the axis of the collision (the normal of the face that was collided with)
+  var unitVector :Vector; // unit vector on the axis of the collision (the normal of the face that was collided with)
   var unitVectorX (get, set) :Float;
   var unitVectorY (get, set) :Float;
 
-  var other      :ShapeCollision;
+  var other :ShapeCollision;
 
 
   inline function new() 
   {
-    separation = new Vector();
-    unitVector = new Vector();
+    separation = VectorPool.instance.get();
+    unitVector = VectorPool.instance.get();
     other = null;
     shape1 = null;
     shape2 = null;
+  }
+
+  inline function dispose() :Void
+  {
+    reset();
+    VectorPool.instance.push(separation);
+    VectorPool.instance.push(unitVector);
+    separation = null;
+    unitVector = null;
   }
 
 
@@ -52,7 +62,7 @@ class ShapeCollision
   inline function clone() :ShapeCollision
   {
 
-    var _clone = new ShapeCollision();
+    var _clone = ShapeCollisionPool.instance.get();
     return _clone.copy_from(this);
 
   } //clone

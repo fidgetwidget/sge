@@ -15,7 +15,6 @@ class Collider
   public var isActive : Bool;
 
   public var transform (get, never) : Transform;
-  
   public var shape (get, never) : Shape;
 
   public var left (get, never) :Float;

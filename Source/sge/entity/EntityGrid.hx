@@ -5,8 +5,7 @@ import openfl.display.Graphics;
 import sge.geom.Coord;
 import sge.geom.Vector;
 import sge.collision.Collider;
-import sge.collision.COLLISION_GROUP;
-import sge.lib.StringArrayPool;
+import sge.lib.pool.StringArrayPool;
 
 // 
 // EntityGrid; EntityManager
@@ -37,7 +36,7 @@ class EntityGrid extends EntityManager {
   }
 
 
-  override public function add ( entity : Entity, collisionGroup : Int = COLLISION_GROUP.NONE ) : Void
+  override public function add ( entity :Entity, group :String = "" ) : Void
   {
     id = entity.id;
     _entitiesById.set(id, entity );
